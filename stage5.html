@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>STAGE5 AES鍵探索の全体像 ― オラクルは比較しない</title>
+<meta name="description" content="Σ|k⟩|AESₖ(P)⟩に暗号文レジスタが2¹²⁸本あるわけではない。128量子ビットのレジスタ1本が、鍵ごとに違う暗号文の重ね合わせになっている。AES計算・一致判定・位相反転・逆計算――教科書の「オラクル1回」に何が含まれているのかを、全部数え上げる。">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/stage5.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="STAGE5 AES鍵探索の全体像 ― オラクルは比較しない">
+<meta property="og:description" content="レジスタは1本。鍵ごとに違う暗号文の重ね合わせに固定の錠前を1回。「オラクル1回」の中身を全部数える。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/stage5.html">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+<style>
+  .qc-svg .label{fill:var(--muted);font-size:11px;font-weight:700}
+  .qc-svg .strong{fill:var(--ink);font-size:12px;font-weight:900}
+  .qc-svg .accent{fill:#b5504a;font-size:11px;font-weight:900}
+  .anim-ctrl{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .anim-ctrl .btn{padding:.4rem .95rem;font-size:13px;font-weight:900}
+  .readout{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:center;margin-top:8px;font-size:13px;font-weight:800;color:var(--ink)}
+  .readout b{font-weight:900;font-variant-numeric:tabular-nums;color:inherit}
+</style>
+</head>
+<body>
+<div class="app-shell side-collapsed" id="app-shell">
+  <header class="game-header">
+    <div class="brand">
+      <div class="brand-title"><a class="head-reset home-badge" href="index.html" title="トップへ" aria-label="トップへ">🗝️</a> <span>オラクルは比較しない</span></div>
+      <div class="brand-sub">STAGE 5 ― AES鍵探索の全体像 ―</div>
+    </div>
+    <div class="head-progress-wrap">
+      <div class="head-progress-label" id="progress-label">クリア 0 / 6</div>
+      <div class="head-progress" role="progressbar" aria-label="クリア済みステージ数" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><div class="head-progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="header-actions">
+      <button class="head-reset" id="btn-reset-all">🔄 最初から</button>
+      <button class="head-reset" id="head-nav-toggle" title="ステージ一覧の表示切替">☰ ナビ</button>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <div class="side-backdrop" id="side-backdrop"></div>
+    <aside class="side-panel">
+      <div class="side-head">
+        <button class="side-toggle" id="sidebar-toggle" title="ステージ一覧の表示切替" aria-label="ステージ一覧の表示切替">☰</button>
+        <span class="side-head-text">📚 ステージ一覧</span>
+      </div>
+      <div class="side-list" id="side-list"></div>
+    </aside>
+
+    <main class="main-area">
+      <div class="chapter-head">
+        <span class="chapter-badge">STAGE 5</span><span class="chapter-title">AES鍵探索の全体像</span>
+        <div class="chapter-sub">レジスタは1本</div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-label">🎯 ミッション</div>
+        <div class="mission-text">錠前をAES鍵探索の実戦に配置しよう。Σ|k⟩|AESₖ(P)⟩ が「2¹²⁸本のレジスタ」ではなく1本のレジスタの重ね合わせであること、教科書の「オラクル1回」にAES計算・一致判定・位相反転・逆計算のすべてが含まれることを説明できれば合格。</div>
+        <span class="mission-status" id="mission-status">未達成</span>
+      </div>
+
+      <div class="dialogue-scene">
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">錠前は建った。今日はそれを実戦に配置する。相手は<strong>AES</strong>――2001年に米国の標準に選ばれ、いまインターネットの通信のほとんどを守っている<strong>共通鍵暗号</strong>だ。送りたいデータ（<strong>平文</strong>と呼ぶ）Pを、128ビットの<strong>鍵</strong>kでぐちゃぐちゃにかき混ぜて、<strong>暗号文</strong> AES<sub>k</sub>(P) を作る。同じ鍵を持っている人だけが元に戻せる。<br>攻撃者の設定はこうだ。平文Pと、正しい鍵Kで作られた暗号文 <strong>C＝AES<sub>K</sub>(P)</strong> のペアを、どこかで手に入れた。知りたいのは鍵Kそのもの。分かっているのは「kが正解 ⇔ AES<sub>k</sub>(P)＝C」という判定条件だけ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">グローバーの型にきれいにはまります。候補は2¹²⁸個の鍵。ふつうに総当たりすれば平均2¹²⁷回、グローバーなら約√(2¹²⁸)回で……<br>あれ、でも待ってください。私たちの錠前は「<strong>入力がCと一致するか</strong>」を調べる回路です。ところが重ね合わせにするのは<strong>鍵k</strong>のほう。kは128ビットの数字であって、暗号文ではありません。<strong>kをそのままCの錠前に通しても意味がない</strong>のでは？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">そこに気づけば、全体像は半分できたようなものだ。そう、錠前の前に<strong>もう1つ仕事</strong>が要る。kから AES<sub>k</sub>(P) を<strong>計算する</strong>仕事だ。<br>装置の構成はこうなる。レジスタ――量子ビットの束――を2本用意する。<br>・<strong>鍵レジスタ</strong>：128量子ビット。ここに鍵の重ね合わせを作る<br>・<strong>作業レジスタ</strong>：暗号文を書き込むための束。最初は |00…0⟩<br>AESはANDや入れ替えのような論理演算でできた計算だから、トフォリたち基本ゲートで<strong>量子回路として組み直せる</strong>。数万ゲート規模の大工事だが、原理はSTAGE4の鎖と同じだよ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">手順を追ってみます。<br>①鍵レジスタの128量子ビット全部にHゲート。これで2¹²⁸個の鍵すべての等しい重ね合わせ Σ|k⟩ ができるのでした（Σは「全部の和」の記号でしたね）。<br>②AES回路を通すと、作業レジスタに各鍵での暗号文が書き込まれて……<br><strong>Σ|k⟩|AES<sub>k</sub>(P)⟩</strong><br>③ここでSTAGE4の錠前を<strong>作業レジスタ</strong>に掛ければ、暗号文がCと一致する成分だけ反転する！</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">その通り。ただ、②の式の読み方で、世間の誤解がいちばん濃いところに来た。立ち止まって正確に読もう。<br>Σ|k⟩|AES<sub>k</sub>(P)⟩ と書くと、まるで<strong>2¹²⁸台の暗号計算機が2¹²⁸個の暗号文を並べて持っている</strong>ように聞こえる。違うんだ。ここにあるのは<strong>128量子ビットの作業レジスタが、ただ1本</strong>。前作で「N行の表は、たった1つの状態を書き下した姿」と言ったのと同じで、この1本のレジスタの状態が、<strong>鍵ごとに違う暗号文を成分に持つ1つの重ね合わせ</strong>になっている、というだけだ。<br>装置の実体は、鍵128＋作業128＋メモ用の補助、合わせて<strong>数百量子ビット</strong>。2¹²⁸個の何かが物理的に並んでいるわけではない。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">③にも確認したいことがあります。錠前が−を付けるのは<strong>作業レジスタの暗号文</strong>を見た結果です。でも欲しいのは<strong>鍵</strong>の目印です。暗号文に目印が付いても、鍵レジスタに伝わらなければ意味がないのでは。<br>……いえ、大丈夫ですね。②の状態は |k⟩ と |AES<sub>k</sub>(P)⟩ が<strong>ペアで1つの成分</strong>になっている――<a href="https://ruglerugle.github.io/bell-inequality/" target="_blank" rel="noopener" style="color:#8a5a2a;text-decoration:underline">もつれ</a>です。−は成分<strong>まるごと</strong>に付くから、「暗号文がCの成分」＝「鍵がKの成分」。<strong>錠前は鍵を1度も見ていないのに、正解の鍵に目印が付く</strong>。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">そう。式で書けば、<br><strong>Σ|k⟩|AES<sub>k</sub>(P)⟩ → Σ(−1)<sup>[AES<sub>k</sub>(P)＝C]</sup>|k⟩|AES<sub>k</sub>(P)⟩</strong><br>――肩の [条件] は、条件が成り立つとき1、成り立たないとき0という意味の記号だ。成り立つ成分だけ (−1)¹＝−1 が掛かる。<br>そして④、最後の仕事が残っている。作業レジスタに書いた暗号文は<strong>計算メモ</strong>だ。STAGE4で学んだ通り、メモが残れば手がかりになり、鍵レジスタの干渉が壊れる。だから<strong>AES回路を逆再生</strong>して、作業レジスタを |00…0⟩ に戻す。これで目印だけを持った Σ±|k⟩ が手に入り、折り返しに渡せる。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">教科書が「オラクル1回」と数えるものの中身が、やっと見えました。<br>①H……は準備として、1回のオラクルは、<br>②AES計算（数万ゲート）＋③一致判定と位相反転（数百ゲート）＋④AES逆計算（数万ゲート）<br>の<strong>ひとまとまり</strong>なんですね。「オラクル1回＝物理的なゲート1個」では全然ない。<br>まとめ直すと――<strong>全鍵候補と正解を比較しているのではなく、暗号文レジスタの128ビットが既知の暗号文Cと一致するかを、固定回路で調べている。そのレジスタが重ね合わせだから、条件に合う鍵の成分だけが反転する</strong>。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">それがこのクエストの答えだ。付け加えることはほとんどないよ。<br>あとはこのオラクルと折り返しのペアを√N回――2¹²⁸の平方根、つまり<strong>約2⁶⁴回</strong>くり返せば、正解の鍵の矢印が育ちきって、測定でKがほぼ確実に読み出せる。<br>……ただね、「約2⁶⁴回」という数を聞き流してはいけない。最終ステージでは、この数の重さを正直に量って、クエストを締めくくろう。</div>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg id="aes-svg" class="qc-svg" viewBox="0 0 372 232" width="100%" role="img" aria-label="AES鍵探索の全体回路のステップ図。上の線が128量子ビットの鍵レジスタ、下の線が作業レジスタ。Hゲート、AES回路、一致判定の錠前、AES逆計算の4つのブロックが順に並び、ボタンで1段ずつ進めると、その時点の状態の式が下に表示される">
+          <text class="strong" x="186" y="16" text-anchor="middle">AES鍵探索・オラクル1回の中身</text>
+          <!-- レジスタ線 -->
+          <text class="label" x="40" y="58" text-anchor="middle">鍵 128qubit</text>
+          <text class="label" x="40" y="118" text-anchor="middle">作業 128qubit</text>
+          <line x1="14" y1="68" x2="358" y2="68" stroke="#7d8894" stroke-width="2"/>
+          <line x1="14" y1="128" x2="358" y2="128" stroke="#7d8894" stroke-width="2"/>
+          <!-- ブロック -->
+          <g id="blk-0">
+            <rect x="60" y="52" width="34" height="32" rx="7" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.6"/>
+            <text class="strong" x="77" y="73" text-anchor="middle">H</text>
+            <text class="label" x="77" y="100" text-anchor="middle">×128</text>
+          </g>
+          <g id="blk-1">
+            <rect x="118" y="44" width="52" height="100" rx="8" fill="#fdefed" stroke="#b5504a" stroke-width="1.6"/>
+            <text class="strong" x="144" y="90" text-anchor="middle">AES</text>
+            <text class="label" x="144" y="106" text-anchor="middle">数万</text>
+          </g>
+          <g id="blk-2">
+            <rect x="192" y="104" width="52" height="48" rx="8" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.6"/>
+            <text class="strong" x="218" y="124" text-anchor="middle">錠前</text>
+            <text class="label" x="218" y="140" text-anchor="middle">数百</text>
+          </g>
+          <g id="blk-3">
+            <rect x="266" y="44" width="52" height="100" rx="8" fill="#fdefed" stroke="#b5504a" stroke-width="1.6"/>
+            <text class="strong" x="292" y="86" text-anchor="middle">AES</text>
+            <text class="strong" x="292" y="102" text-anchor="middle">逆再生</text>
+            <text class="label" x="292" y="118" text-anchor="middle">数万</text>
+          </g>
+          <!-- オラクル1回のブレース -->
+          <path d="M118 158 L118 166 L318 166 L318 158" fill="none" stroke="#5b3fa6" stroke-width="1.6"/>
+          <text class="accent" x="218" y="182" text-anchor="middle" style="fill:#5b3fa6">ここまで全部で「オラクル1回」</text>
+          <text id="aes-state" class="strong" x="186" y="206" text-anchor="middle">|00…0⟩|00…0⟩（スタート）</text>
+          <text id="aes-note" class="label" x="186" y="224" text-anchor="middle">ボタンで1段ずつ進めてみよう</text>
+        </svg>
+        <div class="anim-ctrl">
+          <button type="button" class="btn btn-primary" id="btn-stage-step">次の段へ</button>
+          <button type="button" class="btn" id="btn-stage-reset">最初から</button>
+        </div>
+        <div class="readout">使ったゲート数の目安: <b id="aes-gates">0</b></div>
+        <div class="diagram-caption">オラクル1回ぶんの中身。レジスタは上下の<strong>2本だけ</strong>で、2¹²⁸本の線があるわけではない。AESブロックが作業レジスタに「鍵ごとの暗号文」を重ね合わせのまま書き込み、錠前（STAGE2〜4で建てた固定回路）が暗号文＝Cの成分に−を付け、AES逆再生がメモを消す。教科書の「オラクル1回」はこの<strong>点線の囲い全体</strong>を指していて、物理的な基本ゲート1個のことではない。</div>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【AES鍵探索・オラクル1回の中身】</span>
+        <span class="step">・設定：平文Pと正しい暗号文 <span class="nw">C＝AES<sub>K</sub>(P)</span> を入手済み。判定条件は「<span class="nw">AES<sub>k</sub>(P)＝C</span> ⇔ kが正解」</span>
+        <span class="step">・装置：鍵レジスタ128量子ビット＋作業レジスタ128量子ビット＋補助。<strong>合計数百量子ビット</strong>（2¹²⁸個の装置ではない）</span>
+        <span class="step">・① H×128 → <span class="nw">Σ|k⟩|00…0⟩</span>（全鍵の等重ね合わせ）</span>
+        <span class="step">・② AES回路（数万ゲート）→ <span class="nw">Σ|k⟩|AES<sub>k</sub>(P)⟩</span>。暗号文レジスタは<strong>1本</strong>で、鍵ごとに違う暗号文を成分に持つ重ね合わせ</span>
+        <span class="step">・③ 錠前（Xサンド＋ANDの鎖＋Z＋逆鎖）→ <span class="nw">Σ(−1)<sup>[AES<sub>k</sub>(P)＝C]</sup>|k⟩|AES<sub>k</sub>(P)⟩</span>。もつれているので、暗号文への目印＝正解鍵への目印</span>
+        <span class="step">・④ AES逆再生（数万ゲート）→ 作業レジスタを |00…0⟩ に戻し、手がかりを消す</span>
+        <span class="step">・<strong>「オラクル1回」＝②＋③＋④のひとまとまり</strong>。物理ゲート1個ではなく数万ゲートの計算。ただしその数はAESの複雑さで決まり、候補の数2¹²⁸には比例しない</span>
+      </div>
+
+      <div class="quiz-head">確認クイズ</div>
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q1. Σ|k⟩|AESₖ(P)⟩ という状態の説明として正しいのは？</p>
+        <div class="choice-list">
+          <button class="choice-btn">2¹²⁸本の暗号文レジスタに、2¹²⁸個の暗号文が1個ずつ入っている</button>
+          <button class="choice-btn">128本の暗号文レジスタに、暗号文が分担して入っている</button>
+          <button class="choice-btn">128量子ビットの暗号文レジスタ1本が、鍵ごとに違う暗号文を成分に持つ重ね合わせになっている</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ レジスタの実体は1本だけ。「2¹²⁸個の暗号文」は、その1本の状態を一覧表に書き下したときの行の数であって、物理的に並んだ装置の数ではない。装置全体でも数百量子ビットで済む――候補が2倍になっても量子ビットは1個増えるだけだ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q2. 錠前（一致判定回路）は作業レジスタの暗号文しか見ていないのに、正解の「鍵」に目印が付くのはなぜ？</p>
+        <div class="choice-list">
+          <button class="choice-btn">錠前が鍵レジスタもこっそり読んでいるから</button>
+          <button class="choice-btn">|k⟩と|AESₖ(P)⟩がもつれてペアで1つの成分になっており、−は成分まるごとに付くから</button>
+          <button class="choice-btn">鍵と暗号文はいつも同じビット列だから</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ AES回路を通ったあとの各成分は「鍵とその暗号文のペア」だ。錠前が「暗号文＝C」の成分に−を付ければ、それは自動的に「鍵＝K」の成分に−を付けたことになる。もつれのおかげで、錠前は鍵を1度も見ずに鍵へ目印を届けられる。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q3. 教科書でいう「オラクル1回」に含まれるものは？</p>
+        <div class="choice-list">
+          <button class="choice-btn">AES計算・一致判定・位相反転・AES逆計算のひとまとまり（数万ゲート）</button>
+          <button class="choice-btn">位相反転のZゲート1個だけ</button>
+          <button class="choice-btn">鍵レジスタの測定1回</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ 「オラクル1回」は問い合わせの回数の数え方であって、物理ゲート1個という意味ではない。1回の問い合わせの中でAESを丸ごと計算し、照合し、目印を付け、メモを消す。だから「回数が√Nで済む」ことと「1回1回はそれなりに重い」ことは、両方とも本当だ。</div>
+      </div>
+
+      <div class="stage-nav">
+        <a class="btn" href="stage4.html">← 前のステージ</a>
+        <button class="btn btn-primary" id="btn-next" disabled>次へ →</button>
+      </div>
+
+      <div id="book-recommend"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/progress.js"></script>
+<script>GO.initStagePage(5);</script>
+
+<script>
+(function(){
+  // オラクル1回の中身ステッパー
+  var step = 0;
+  var STATES = [
+    { s: "|00…0⟩|00…0⟩（スタート）", n: "ボタンで1段ずつ進めてみよう", g: "0" },
+    { s: "Σ|k⟩|00…0⟩", n: "H×128：全鍵の等しい重ね合わせができた", g: "128（H）" },
+    { s: "Σ|k⟩|AESₖ(P)⟩", n: "AES回路：作業レジスタに鍵ごとの暗号文が書き込まれた（レジスタは1本のまま）", g: "128 ＋ 数万（AES）" },
+    { s: "Σ±|k⟩|AESₖ(P)⟩", n: "錠前：暗号文＝C の成分だけ−。もつれているので正解鍵の成分に目印が付いた", g: "128 ＋ 数万 ＋ 数百（錠前）" },
+    { s: "Σ±|k⟩|00…0⟩", n: "AES逆再生：メモが消えた。目印だけ持って折り返しへ渡せる", g: "128 ＋ 数万×2 ＋ 数百 ＝ オラクル1回" }
+  ];
+
+  var blocks = ["blk-0", "blk-1", "blk-2", "blk-3"];
+
+  function render(){
+    document.getElementById("aes-state").textContent = STATES[step].s;
+    document.getElementById("aes-note").textContent = STATES[step].n;
+    document.getElementById("aes-gates").textContent = STATES[step].g;
+    blocks.forEach(function(id, i){
+      var rect = document.getElementById(id).querySelector("rect");
+      if (i === step - 1) {
+        rect.setAttribute("stroke-width", "3");
+        rect.setAttribute("filter", "");
+      } else {
+        rect.setAttribute("stroke-width", "1.6");
+      }
+      rect.setAttribute("opacity", i < step ? "1" : "0.45");
+    });
+  }
+
+  document.getElementById("btn-stage-step").addEventListener("click", function(){
+    if (step < 4) { step++; render(); }
+  });
+  document.getElementById("btn-stage-reset").addEventListener("click", function(){
+    step = 0; render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

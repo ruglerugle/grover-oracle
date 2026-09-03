@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>STAGE4 128ビットの照合 ― オラクルは比較しない</title>
+<meta name="description" content="「128個全部1なら反転」という巨大ゲートは、1個の部品としては存在しない。補助量子ビットにANDを1段ずつ書き込み、最後のメモが1なら位相を反転し、使い終わったメモは逆計算で消す。メモを消さないと手がかりが残って干渉が壊れる――逆計算が必要な深い理由まで掘り下げる。">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/stage4.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="STAGE4 128ビットの照合 ― オラクルは比較しない">
+<meta property="og:description" content="多重制御Zの正体は、補助量子ビットとANDの鎖と逆計算。メモを消す理由は「手がかり」だ。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/stage4.html">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+<style>
+  .qc-svg .label{fill:var(--muted);font-size:11px;font-weight:700}
+  .qc-svg .strong{fill:var(--ink);font-size:12px;font-weight:900}
+  .qc-svg .accent{fill:#5b3fa6;font-size:11px;font-weight:900}
+  .anim-ctrl{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .anim-ctrl .btn{padding:.4rem .95rem;font-size:13px;font-weight:900}
+  .readout{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:center;margin-top:8px;font-size:13px;font-weight:800;color:var(--ink)}
+  .readout b{font-weight:900;font-variant-numeric:tabular-nums;color:inherit}
+</style>
+</head>
+<body>
+<div class="app-shell side-collapsed" id="app-shell">
+  <header class="game-header">
+    <div class="brand">
+      <div class="brand-title"><a class="head-reset home-badge" href="index.html" title="トップへ" aria-label="トップへ">🗝️</a> <span>オラクルは比較しない</span></div>
+      <div class="brand-sub">STAGE 4 ― 128ビットの照合 ―</div>
+    </div>
+    <div class="head-progress-wrap">
+      <div class="head-progress-label" id="progress-label">クリア 0 / 6</div>
+      <div class="head-progress" role="progressbar" aria-label="クリア済みステージ数" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><div class="head-progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="header-actions">
+      <button class="head-reset" id="btn-reset-all">🔄 最初から</button>
+      <button class="head-reset" id="head-nav-toggle" title="ステージ一覧の表示切替">☰ ナビ</button>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <div class="side-backdrop" id="side-backdrop"></div>
+    <aside class="side-panel">
+      <div class="side-head">
+        <button class="side-toggle" id="sidebar-toggle" title="ステージ一覧の表示切替" aria-label="ステージ一覧の表示切替">☰</button>
+        <span class="side-head-text">📚 ステージ一覧</span>
+      </div>
+      <div class="side-list" id="side-list"></div>
+    </aside>
+
+    <main class="main-area">
+      <div class="chapter-head">
+        <span class="chapter-badge">STAGE 4</span><span class="chapter-title">128ビットの照合</span>
+        <div class="chapter-sub">ANDの鎖と逆計算</div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-label">🎯 ミッション</div>
+        <div class="mission-text">「全部1なら反転」の巨大な門番を、補助量子ビットとANDの鎖で自分で建てよう。使い終わったメモを逆計算で消す理由を「手がかり」という言葉で説明できれば合格。128ビットの照合コストが2¹²⁸ではなく128に比例することまで言えれば完璧だ。</div>
+        <span class="mission-status" id="mission-status">未達成</span>
+      </div>
+
+      <div class="dialogue-scene">
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">前回の宿題からいこう。実物の量子コンピュータに用意されている基本ゲートは、1量子ビットに働くもの（XやZやHなど）と、2〜3量子ビットに働くもの（CNOTなど）だけだ。「128ビット全部が1なら反転」という門番は、<strong>既製品の棚には置いていない</strong>。<br>ただ、これは量子に限った話でもなくてね。古典の錠前でも「128入力のAND」という1個の素子は使わない。2入力のANDを127個つないで作る。y₁とy₂のANDを取り、その結果とy₃のANDを取り……と<strong>鎖</strong>にするんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">論理回路の旅でもそうでした。大きな回路は小さなゲートの積み重ねでした。<br>ということは、量子側でも「2入力ANDに相当するゲート」があれば、同じ鎖が組めるはずですね。でも、量子のゲートで途中の計算結果は<strong>どこに書く</strong>んですか。古典なら配線の途中に信号が流れるだけですが。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">いい着眼だ。書く場所として、<strong>補助量子ビット</strong>を追加で用意する。計算用のメモ帳だと思えばいい。最初は全部 |0⟩ にしておく。<br>そしてメモに書き込むペンが、<strong>トフォリゲート</strong>だ。CNOTの親戚で、制御ビットが2つある。働きは「<strong>制御の2つが両方1のときだけ、標的のビットを裏返す</strong>」。<br>標的をあらかじめ0にしておくと、どうなるか。両方1なら0→1に裏返り、そうでなければ0のまま。つまり標的には <strong>y₁ AND y₂</strong> がそのまま書き込まれる。これが量子版の2入力ANDだよ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">それなら鎖が組めます。補助ビットを a₁、a₂、……として、<br>a₁ ＝ y₁ AND y₂<br>a₂ ＝ a₁ AND y₃<br>a₃ ＝ a₂ AND y₄<br>……<br>a₁₂₇ ＝ y₁ AND y₂ AND … AND y₁₂₈<br>トフォリを127回。最後のメモ a₁₂₇ が1になるのは、<strong>128ビット全部が1のときだけ</strong>です。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">そう。そして仕上げは簡単だ。<strong>Zゲート</strong>という1量子ビットの基本ゲートがあって、働きは「そのビットが1の成分の矢印だけ反対向きにする」。これを a₁₂₇ に1発掛ければ、<strong>全部1だった成分にだけ−が付く</strong>。STAGE2で「多重制御Z」と呼んだ門番の正体は、この<strong>トフォリの鎖＋Z1発</strong>の組み立て品だったわけだ。<br>さて――ここで終わりにして、平均のまわりの折り返しに進みたいところだが、どうかな。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">……駄目だと思います。<a href="https://ruglerugle.github.io/decoherence-quest/" target="_blank" rel="noopener" style="color:#8a5a2a;text-decoration:underline">デコヒーレンスの旅</a>で習ったことをそのまま当てはめると、補助ビットには<strong>手がかりが残っています</strong>。<br>いまの状態を成分ごとに見ると、当たりの成分だけメモが 1、外れの成分はメモが 0。つまり<strong>メモを見れば道筋を区別できてしまう</strong>。区別のつく道筋どうしは、矢印を足し合わせて打ち消し合うことができない――干渉できないのでした。このまま進むと、あとの「折り返し」が働かなくなりませんか。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">その通り。よく既習の道具で言い当てた。補助ビットに残った計算メモは、環境に漏れた手がかりと同じ働きをして、<strong>せっかくの重ね合わせを事実上バラバラにしてしまう</strong>。グローバーの折り返しは干渉そのものだから、手がかりが残っていては目印を長さに変えられない。<br>だから、位相を反転し終わったら、<strong>トフォリの鎖を逆順にもう一度掛ける</strong>。トフォリは同じ場所に2回掛けると元通りになる性質があるからね（裏返しの裏返しは元通り）。a₁₂₇から順に消していけば、メモは全部 |0⟩ に戻る。これを<strong>逆計算</strong>と呼ぶ。STAGE2でXを「戻した」のと同じ型――<strong>行きの変換を、帰りに逆再生する</strong>だ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">消してしまって大丈夫なんですね。目印の−は<strong>矢印の向き</strong>に付いているから、メモを0に戻しても消えない。手がかりだけがなくなって、目印は残る。<br>全体の手順を数え上げてみます。128ビットの一致判定は、<br>①Cの0の桁にX（最大128個）<br>②トフォリの鎖で ANDを積む（127個）<br>③Zを1発<br>④鎖を逆再生（127個）<br>⑤Xを戻す（最大128個）<br>合計<strong>数百ゲート</strong>。多いですが、2¹²⁸に比べれば無いも同然です。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">それが正直な勘定だ。2つの俗説を同時に退治できたことになるね。<br>ひとつ、「オラクルは2¹²⁸個の候補と1個ずつ比較する」――しない。固定回路が線形性で全成分に効く。<br>ふたつ、「オラクルは基本ゲート1個で瞬時に判定する」――これも違う。<strong>数百ゲートぶんの、れっきとした計算</strong>だ。ただしその数は<strong>ビット数に比例</strong>するのであって、候補の数2¹²⁸には比例しない。<br>ここまでで錠前は128ビット版も建った。次は、この錠前をAESの鍵探索という実戦に配置してみよう。</div>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg id="chain-svg" class="qc-svg" viewBox="0 0 372 250" width="100%" role="img" aria-label="ANDの鎖と逆計算のシミュレータ。6ビットの入力と5個の補助ビットが並び、1歩進むボタンでトフォリゲートが順に働いて補助ビットにANDの結果が書き込まれていく。最後の補助ビットが1ならZゲートで位相が反転し、そのあと鎖が逆順に働いて補助ビットがすべて0に戻る">
+          <text class="strong" x="186" y="16" text-anchor="middle">6ビット版で建てる：ANDの鎖 → Z → 逆計算</text>
+          <text class="label" x="30" y="42" text-anchor="middle">入力</text>
+          <g id="in-row"></g>
+          <text class="label" x="30" y="112" text-anchor="middle">メモ</text>
+          <g id="anc-row"></g>
+          <!-- Z box -->
+          <rect id="z4box" x="308" y="126" width="30" height="30" rx="7" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.6"/>
+          <text class="strong" x="323" y="146" text-anchor="middle">Z</text>
+          <text class="label" x="323" y="170" text-anchor="middle">メモが1なら反転</text>
+          <text id="phase-label" class="accent" x="186" y="196" text-anchor="middle">いまの手順：まだ始めていない</text>
+          <text class="strong" x="186" y="218" text-anchor="middle">この成分の符号：<tspan id="sign-label">＋</tspan>　　使ったゲート：<tspan id="gate-count" class="accent">0</tspan> 個</text>
+          <text id="memo-label" class="label" x="186" y="238" text-anchor="middle">メモはすべて0（手がかりなし）</text>
+        </svg>
+        <div class="anim-ctrl">
+          <button type="button" class="btn btn-primary" id="btn-step">1歩進む</button>
+          <button type="button" class="btn" id="btn-reset-sim">最初から</button>
+          <button type="button" class="btn" id="btn-flip4">y₄ を切り替え</button>
+        </div>
+        <div class="readout">入力: <b id="in-str">111111</b>（<b id="in-note">全部1＝当たりの成分</b>）</div>
+        <div class="diagram-caption">128ビットの代わりに6ビットで建てた鎖。「1歩進む」で、トフォリゲートが a₁＝y₁ AND y₂、a₂＝a₁ AND y₃……と<strong>メモに書き込んでいく</strong>。最後のメモ a₅ が1（＝入力が全部1）ならZが矢印を反転。そのあと鎖を<strong>逆順にたどってメモを全部0に戻す</strong>と、手がかりは消え、−の目印だけが残る。「y₄を切り替え」で外れの成分にすると、鎖の途中で0が混ざり、Zは働かず、符号は＋のまま――同じ回路が両方の成分を正しくさばく。</div>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【「全部1なら反転」の建て方（nビット）】</span>
+        <span class="step">・道具：<strong>トフォリゲート</strong>（制御2つが両方1のときだけ標的を裏返す）。標的を |0⟩ にしておけば「AND の書き込み」になる</span>
+        <span class="step">・行き（ANDの鎖）：補助量子ビット（メモ）に <span class="nw">a₁＝y₁∧y₂</span>、<span class="nw">a₂＝a₁∧y₃</span>、……、<span class="nw">a₁₂₇＝y₁∧…∧y₁₂₈</span> と順に書き込む（∧はANDの記号）</span>
+        <span class="step">・仕上げ：a₁₂₇ に <strong>Zゲート</strong>（そのビットが1の成分の矢印だけ反転）を1発</span>
+        <span class="step">・帰り（<strong>逆計算</strong>）：トフォリの鎖を逆順にもう一度掛け、メモを全部 |0⟩ に戻す。<strong>メモが残ると手がかりになり、成分どうしが区別できて干渉が壊れる</strong>から</span>
+        <span class="step">・目印の−は矢印の向きに付いているので、メモを消しても残る</span>
+        <span class="step">・費用：Xサンド＋トフォリ127×2＋Z1 ＝ <strong>数百ゲート</strong>。「基本ゲート1個で瞬時」ではないが、2¹²⁸ にも比例しない。<strong>ビット数に比例</strong>する</span>
+      </div>
+
+      <div class="quiz-head">確認クイズ</div>
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q1. 位相を反転したあと、トフォリの鎖を逆順に掛けてメモ（補助ビット）を0に戻すのはなぜ？</p>
+        <div class="choice-list">
+          <button class="choice-btn">ゲートの数を節約するため</button>
+          <button class="choice-btn">メモが残ると成分ごとに道筋を区別できる「手がかり」になり、あとの折り返し（干渉）が壊れるから</button>
+          <button class="choice-btn">補助ビットを次の問題で使い回すため</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ 当たりの成分だけメモが1、外れは0――この差は環境に漏れた手がかりと同じ働きをして、重ね合わせを事実上バラバラにする。グローバーの折り返しは干渉そのものだから、手がかりを消してからでないと目印を長さに変えられない。逆計算は美観ではなく死活問題だ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q2. 128ビットの一致判定（オラクルの照合部分）に必要な基本ゲートの数は、おおよそ？</p>
+        <div class="choice-list">
+          <button class="choice-btn">1個（「多重制御Z」という基本部品が実機に備わっている）</button>
+          <button class="choice-btn">2¹²⁸ 個（候補の数だけ必要）</button>
+          <button class="choice-btn">数百個（ビット数に比例する）</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ Xサンドが最大128×2、トフォリの鎖が127×2、Zが1個で、合計は数百個規模。「巨大ゲート1個で瞬時に判定」は誤りだが、候補の数2¹²⁸とはまったく無関係で、ビット数128に比例するだけ、というのが正確な姿だ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q3. トフォリゲートで標的ビットに「y₁ AND y₂」を書き込むための準備は？</p>
+        <div class="choice-list">
+          <button class="choice-btn">標的ビットをあらかじめ |0⟩ にしておく</button>
+          <button class="choice-btn">標的ビットをあらかじめ |1⟩ にしておく</button>
+          <button class="choice-btn">制御ビットを両方 |0⟩ にしておく</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ トフォリは「制御2つが両方1なら標的を裏返す」。標的が0スタートなら、裏返って1になるのは両方1のときだけ――つまり標的にはANDの結果がそのまま書き込まれる。1スタートだと結果が反転してしまう（それはそれでNANDとして使えるが、ここでは0に揃える）。</div>
+      </div>
+
+      <div class="stage-nav">
+        <a class="btn" href="stage3.html">← 前のステージ</a>
+        <button class="btn btn-primary" id="btn-next" disabled>次へ →</button>
+      </div>
+
+      <div id="book-recommend"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/progress.js"></script>
+<script>GO.initStagePage(4);</script>
+
+<script>
+(function(){
+  // ANDの鎖と逆計算のステップ・シミュレータ（6ビット版）
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var N = 6;
+  var y = [1, 1, 1, 1, 1, 1];
+  var anc = [0, 0, 0, 0, 0];
+  var step = 0; // 0..11（1..5=行き、6=Z、7..11=帰り）
+  var sign = 1;
+  var gates = 0;
+
+  var inRow = document.getElementById("in-row");
+  var ancRow = document.getElementById("anc-row");
+
+  function build(){
+    for (var i = 0; i < N; i++) {
+      var cx = 66 + i * 50;
+      var r = document.createElementNS(SVG_NS, "rect");
+      r.setAttribute("x", cx - 15); r.setAttribute("y", 28);
+      r.setAttribute("width", 30); r.setAttribute("height", 26);
+      r.setAttribute("rx", 6); r.setAttribute("id", "yc-" + i);
+      inRow.appendChild(r);
+      var t = document.createElementNS(SVG_NS, "text");
+      t.setAttribute("x", cx); t.setAttribute("y", 46);
+      t.setAttribute("text-anchor", "middle"); t.setAttribute("class", "strong");
+      t.setAttribute("id", "yt-" + i);
+      inRow.appendChild(t);
+      var lbl = document.createElementNS(SVG_NS, "text");
+      lbl.setAttribute("x", cx); lbl.setAttribute("y", 70);
+      lbl.setAttribute("text-anchor", "middle"); lbl.setAttribute("class", "label");
+      lbl.textContent = "y" + subNum(i + 1);
+      inRow.appendChild(lbl);
+    }
+    for (var j = 0; j < N - 1; j++) {
+      var ax = 96 + j * 44;
+      var c = document.createElementNS(SVG_NS, "circle");
+      c.setAttribute("cx", ax); c.setAttribute("cy", 138);
+      c.setAttribute("r", 15); c.setAttribute("id", "ac-" + j);
+      ancRow.appendChild(c);
+      var at = document.createElementNS(SVG_NS, "text");
+      at.setAttribute("x", ax); at.setAttribute("y", 143);
+      at.setAttribute("text-anchor", "middle"); at.setAttribute("class", "strong");
+      at.setAttribute("id", "at-" + j);
+      ancRow.appendChild(at);
+      var albl = document.createElementNS(SVG_NS, "text");
+      albl.setAttribute("x", ax); albl.setAttribute("y", 170);
+      albl.setAttribute("text-anchor", "middle"); albl.setAttribute("class", "label");
+      albl.textContent = "a" + subNum(j + 1);
+      ancRow.appendChild(albl);
+    }
+  }
+
+  function subNum(n){
+    var subs = ["₀","₁","₂","₃","₄","₅","₆","₇","₈","₉"];
+    return ("" + n).split("").map(function(d){ return subs[+d]; }).join("");
+  }
+
+  function computeAnc(upTo){
+    var a = [0, 0, 0, 0, 0];
+    var acc = y[0];
+    for (var j = 0; j < N - 1; j++) {
+      acc = acc & y[j + 1];
+      a[j] = acc;
+    }
+    for (var k = upTo; k < N - 1; k++) a[k] = 0;
+    return a;
+  }
+
+  function phaseText(){
+    if (step === 0) return "いまの手順：まだ始めていない";
+    if (step <= 5) return "行き：トフォリで a" + subNum(step) + " に AND を書き込んだ";
+    if (step === 6) return sign < 0 ? "Z：メモが1なので矢印を反転！" : "Z：メモが0なので何もしない";
+    if (step <= 11) return "帰り：逆計算で a" + subNum(12 - step) + " を消した";
+    return "";
+  }
+
+  function render(){
+    for (var i = 0; i < N; i++) {
+      var rc = document.getElementById("yc-" + i);
+      rc.setAttribute("fill", y[i] ? "#f0d9a4" : "#edf0f4");
+      rc.setAttribute("stroke", y[i] ? "#8a6a24" : "#b9c2cc");
+      rc.setAttribute("stroke-width", "1.5");
+      document.getElementById("yt-" + i).textContent = y[i];
+    }
+    for (var j = 0; j < N - 1; j++) {
+      var cc = document.getElementById("ac-" + j);
+      cc.setAttribute("fill", anc[j] ? "#efe9f9" : "#fdfcf8");
+      cc.setAttribute("stroke", anc[j] ? "#5b3fa6" : "#b9c2cc");
+      cc.setAttribute("stroke-width", anc[j] ? "2.4" : "1.5");
+      document.getElementById("at-" + j).textContent = anc[j];
+    }
+    document.getElementById("phase-label").textContent = phaseText();
+    document.getElementById("sign-label").textContent = sign > 0 ? "＋" : "−";
+    document.getElementById("gate-count").textContent = gates;
+    var hasMemo = anc.some(function(v){ return v === 1; });
+    document.getElementById("memo-label").textContent = hasMemo
+      ? "メモに計算の跡が残っている（手がかりあり！ このままでは干渉できない）"
+      : "メモはすべて0（手がかりなし）";
+    var zbox = document.getElementById("z4box");
+    zbox.setAttribute("fill", step === 6 && sign < 0 ? "#f0d9a4" : "#f8f0e3");
+    document.getElementById("in-str").textContent = y.join("");
+    var allOnes = y.every(function(v){ return v === 1; });
+    document.getElementById("in-note").textContent = allOnes ? "全部1＝当たりの成分" : "0を含む＝外れの成分";
+  }
+
+  document.getElementById("btn-step").addEventListener("click", function(){
+    if (step >= 11) return;
+    step++;
+    if (step <= 5) {
+      anc = computeAnc(step);
+      gates++;
+    } else if (step === 6) {
+      if (anc[4] === 1) sign = -sign;
+      gates++;
+    } else {
+      anc = computeAnc(11 - step);
+      gates++;
+    }
+    render();
+  });
+
+  document.getElementById("btn-reset-sim").addEventListener("click", function(){
+    anc = [0,0,0,0,0]; step = 0; sign = 1; gates = 0;
+    render();
+  });
+
+  document.getElementById("btn-flip4").addEventListener("click", function(){
+    y[3] = 1 - y[3];
+    anc = [0,0,0,0,0]; step = 0; sign = 1; gates = 0;
+    render();
+  });
+
+  build();
+  render();
+})();
+</script>
+</body>
+</html>

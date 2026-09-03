@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>全ステージクリア ― オラクルは比較しない</title>
+<meta name="description" content="オラクルは比較しない、全6ステージクリアおめでとう。ここまでの旅を振り返ろう。">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/complete.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="全ステージクリア ― オラクルは比較しない">
+<meta property="og:description" content="全6ステージクリアおめでとう。旅を振り返ろう。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/complete.html">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="topbar" aria-label="サイト情報">
+    <span class="brand-badge" aria-hidden="true">🗝️</span>
+    <span class="brand-copy">
+      <strong>オラクルは比較しない</strong>
+      <small>GROVER ORACLE QUEST</small>
+    </span>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-copy">
+      <h1><span class="line">錠前、開錠完了 ∎</span></h1>
+      <p>「量子コンピュータは2¹²⁸個の鍵を同時に試す」という言い回しの、どこが誤解を招き、実際には何が起きているのか――きみはもう、オラクルの中身を部品から語れる。比較リストのない錠前、位相の透明な目印、線形性という仕分け係、ANDの鎖と逆計算、1本きりのレジスタ。そして「オラクル1回」が数万ゲートの誠実な労働であることまで。旅の記録で振り返ろう。</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="board" aria-labelledby="recap-heading">
+      <div class="board-head">
+        <div><h2 id="recap-heading">ここまでの旅を振り返ろう</h2></div>
+        <p>全6ステージ、おつかれさま</p>
+      </div>
+
+      <div class="recap-list">
+        <div class="recap-item">
+          <div class="recap-num">1</div>
+          <div class="recap-body">
+            <div class="recap-title">一致判定は回路になる</div>
+            <div class="recap-desc">C=101との一致は f＝y₂ AND (NOT y₁) AND y₀ の固定回路で判定できる。候補リストも比較用メモもなく、正解の情報はNOTを置いた位置に焼き付いている。部品数はビット数に比例し、候補の数2¹²⁸とは無関係。</div>
+          </div>
+        </div>
+        <div class="recap-item">
+          <div class="recap-num">2</div>
+          <div class="recap-body">
+            <div class="recap-title">位相に目印を付ける</div>
+            <div class="recap-desc">Cの0の桁にX、「全部1なら矢印を反転」の多重制御Z、Xを戻す。|101⟩だけが−|101⟩になり、他の7状態は無傷で通り抜ける。目印は長さを変えない透明なインクで、折り返しが長さに変えて初めて見える。</div>
+          </div>
+        </div>
+        <div class="recap-item">
+          <div class="recap-num">3</div>
+          <div class="recap-body">
+            <div class="recap-title">重ね合わせを1回で</div>
+            <div class="recap-desc">重ね合わせを通しても回路は1回しか動かない。U(α|001⟩＋β|101⟩)＝αU|001⟩＋βU|101⟩――「足してから通す＝1個ずつ通してから足す」を法則が保証する。仕分けは装置ではなく線形性の仕事。</div>
+          </div>
+        </div>
+        <div class="recap-item">
+          <div class="recap-num">4</div>
+          <div class="recap-body">
+            <div class="recap-title">128ビットの照合</div>
+            <div class="recap-desc">巨大な門番は既製品にない。トフォリの鎖で補助ビットにANDを積み、Zを1発、鎖を逆再生してメモを消す。メモが残れば手がかりになって干渉が壊れる――逆計算は死活問題。費用は数百ゲート、ビット数に比例。</div>
+          </div>
+        </div>
+        <div class="recap-item">
+          <div class="recap-num">5</div>
+          <div class="recap-body">
+            <div class="recap-title">AES鍵探索の全体像</div>
+            <div class="recap-desc">Σ|k⟩|AESₖ(P)⟩のレジスタは1本きり。もつれのおかげで、暗号文への目印がそのまま正解鍵への目印になる。「オラクル1回」＝AES計算＋照合＋位相反転＋逆計算のひとまとまり、数万ゲート。</div>
+          </div>
+        </div>
+        <div class="recap-item">
+          <div class="recap-num">6</div>
+          <div class="recap-body">
+            <div class="recap-title">それでも2⁶⁴回</div>
+            <div class="recap-desc">反復は直列で、1回1マイクロ秒でも58万年。「一瞬で破れる」は四重に誤り。それでも安全マージンの目減りを重く見て、世界は鍵を256ビットに伸ばした。指数加速のショアとは処方箋が違う。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【旅の結論 ― オラクルは比較しない】</span>
+        <span class="step">・オラクルは<strong>正解の値に合わせて作られた固定の一致判定回路</strong>。候補を1個ずつ取り出して比較する装置ではない</span>
+        <span class="step">・重ね合わせの全成分に効くのは、回路の仕掛けではなく<strong>量子力学の線形性</strong>。回路は1回しか動かない</span>
+        <span class="step">・「オラクル1回」＝<strong>AES計算＋一致判定＋位相反転＋逆計算</strong>のひとまとまり。物理ゲート1個ではない</span>
+        <span class="step">・手間はビット数に比例し、候補の数 2¹²⁸ には比例しない。ただし目印を長さに変える反復が<span class="nw">約2⁶⁴回・直列</span>で必要</span>
+        <span class="step">・魔法はどこにもない。<strong>装置ではなく法則が仕分けをしてくれる</strong>――それがこの計算機の本当のすごさ</span>
+      </div>
+
+      <div class="complete-actions">
+        <a class="btn btn-primary" href="index.html">トップに戻る →</a>
+        <button class="btn" id="btn-reset-all">🔄 最初からやり直す</button>
+      </div>
+    </section>
+
+    <div id="book-recommend"></div>
+  </main>
+
+  <footer>
+    <p>NO DOWNLOAD. NO REGISTRATION. JUST LEARN. &nbsp;© <span id="year"></span> ruglerugle</p>
+    <div class="footer-suits" aria-hidden="true"><span>🗝️</span><span>🪞</span><span>⛓️</span><span>🔐</span></div>
+  </footer>
+</div>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+<script src="js/progress.js"></script>
+<script>GO.initCompletePage();</script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>STAGE1 一致判定は回路になる ― オラクルは比較しない</title>
+<meta name="description" content="「入力が101かどうか」を調べるのに、000と比較、001と比較…と順番に見比べる必要はない。ANDとNOTでできた固定回路が、比較リストなしで一致を見抜く。錠前が鍵の一覧表を持たないのと同じ理屈を、まず古典回路で確かめる。">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/stage1.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="STAGE1 一致判定は回路になる ― オラクルは比較しない">
+<meta property="og:description" content="一致判定に比較リストは要らない。ANDとNOTの固定回路が101を見抜く仕組みを、錠前のたとえで理解する。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/stage1.html">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+<style>
+  .qc-svg .label{fill:var(--muted);font-size:11px;font-weight:700}
+  .qc-svg .strong{fill:var(--ink);font-size:12px;font-weight:900}
+  .qc-svg .accent{fill:#8a5a2a;font-size:11px;font-weight:900}
+  .anim-ctrl{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .anim-ctrl .btn{padding:.4rem .95rem;font-size:13px;font-weight:900}
+  .readout{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:center;margin-top:8px;font-size:12px;font-weight:700;color:var(--ink)}
+  .readout b{font-weight:900;font-variant-numeric:tabular-nums;color:inherit}
+</style>
+</head>
+<body>
+<div class="app-shell side-collapsed" id="app-shell">
+  <header class="game-header">
+    <div class="brand">
+      <div class="brand-title"><a class="head-reset home-badge" href="index.html" title="トップへ" aria-label="トップへ">🗝️</a> <span>オラクルは比較しない</span></div>
+      <div class="brand-sub">STAGE 1 ― 一致判定は回路になる ―</div>
+    </div>
+    <div class="head-progress-wrap">
+      <div class="head-progress-label" id="progress-label">クリア 0 / 6</div>
+      <div class="head-progress" role="progressbar" aria-label="クリア済みステージ数" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><div class="head-progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="header-actions">
+      <button class="head-reset" id="btn-reset-all">🔄 最初から</button>
+      <button class="head-reset" id="head-nav-toggle" title="ステージ一覧の表示切替">☰ ナビ</button>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <div class="side-backdrop" id="side-backdrop"></div>
+    <aside class="side-panel">
+      <div class="side-head">
+        <button class="side-toggle" id="sidebar-toggle" title="ステージ一覧の表示切替" aria-label="ステージ一覧の表示切替">☰</button>
+        <span class="side-head-text">📚 ステージ一覧</span>
+      </div>
+      <div class="side-list" id="side-list"></div>
+    </aside>
+
+    <main class="main-area">
+      <div class="chapter-head">
+        <span class="chapter-badge">STAGE 1</span><span class="chapter-title">一致判定は回路になる</span>
+        <div class="chapter-sub">比較リストは要らない</div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-label">🎯 ミッション</div>
+        <div class="mission-text">「入力が101と一致するか」の判定が、候補を1個ずつ見比べなくても、ANDとNOTの固定回路1個でできる理由を説明できれば合格。正解の情報が回路のどこに焼き付いているかまで言えれば完璧だ。</div>
+        <span class="mission-status" id="mission-status">未達成</span>
+      </div>
+
+      <div class="dialogue-scene">
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">今回のクエストは、<a href="https://ruglerugle.github.io/quantum-computer/" target="_blank" rel="noopener" style="color:#8a5a2a;text-decoration:underline">量子コンピュータはなぜ速いのか</a>で通り過ぎた場所を、じっくり掘り返すよ。グローバーのアルゴリズムに出てきた<strong>オラクル</strong>――当たりの候補の矢印だけを反対向きにする箱だ。あのときは箱の外側の働きだけを使った。今回は<strong>箱を開けて、中身を部品から組み立てる</strong>。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">ちょうど引っかかっていたところです。復習すると、グローバーの方法は「当たりの矢印だけをオラクルで反転する」「平均のまわりで折り返す」の2手を約√N回くり返して、当たりの矢印を育てるのでした。<br>でも、その1手目がずっと謎なんです。箱が「当たりかどうか」を判定できるということは、<strong>箱の中で、正解の値と候補を1個ずつ見比べている</strong>としか思えません。鍵の候補が2¹²⁸個あるなら、中では2¹²⁸回の比較が起きているのでは？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">その疑問に正面から答えるのが、このクエストの目的だよ。先に結論だけ言っておくと、<strong>比較はしていない</strong>。そして「比較していないのに判定できる」のは、量子の魔法ではなくて、<strong>ふつうの論理回路にもともと備わっている性質</strong>なんだ。だから今日は量子の話をいったん忘れて、電気で動くただの回路から始めよう。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">論理回路なら<a href="https://informatics.habatakijuku.com/cpu-logic-game/" target="_blank" rel="noopener" style="color:#8a5a2a;text-decoration:underline">論理回路の旅</a>でやりました。0と1の信号に対して、ANDは「両方1のときだけ1」、ORは「どちらかが1なら1」、NOTは「0と1をひっくり返す」。この3種類を組み合わせれば、どんな計算でも作れるのでした。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">それで十分だ。では問題設定をはっきりさせよう。<strong>正しい値はもう分かっていて、C=101 だとする</strong>。やりたいのは、入力されてくる3ビット――上の桁から y₂、y₁、y₀ と呼ぶ――が、この C と<strong>一致するかどうかの判定</strong>だ。一致していたら1（ランプ点灯）、違ったら0を出す。<br>きみなら、どう作る？</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">一致する条件を書き出してみます。C=101 と一致するのは、<strong>y₂=1、y₁=0、y₀=1 が全部同時に成り立つとき</strong>。それだけですね。<br>「y₁=0」は「NOT y₁ が1」と言い換えられるので……3つの条件を全部ANDでつなげば、<br><strong>f(y) ＝ y₂ AND (NOT y₁) AND y₀</strong><br>この式が1になるのは y=101 のときだけです。NOTが1個とANDが2個、部品3個でできてしまいました。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">そう、それで完成だ。ここで、いま作った回路の動きをよく観察してほしい。この回路は<br>「まず000と見比べる。違う。次に001と見比べる。違う。次に010……」<br>という動作を<strong>していない</strong>。8個の候補のリストも、正解Cを書いたメモも、回路の中には存在しない。入ってきた3本の信号線の電圧が「1・0・1」という条件を満たすかどうかを、<strong>その場で、いっぺんに</strong>調べているだけだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">言われてみれば、比較のしようがないですね。比較というのは「正解を思い出して、候補と桁ごとに突き合わせる」手続きですが、この回路には思い出すべきメモがそもそもありません。<br>……あれ？　でもそれなら、<strong>正解 C=101 の情報はどこへ行った</strong>んですか。回路は現に101だけを言い当てられるのに。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">いちばん大事な問いだ。答えは――<strong>回路の形そのもの</strong>だよ。さっき自分で決めたはずだ。「y₁=0 だから y₁ にNOTを付ける」と。つまり<strong>どの入力線にNOTを置くか</strong>という配線の選び方が、Cの中身をそのまま写し取っている。C=110 用の回路を作るなら、NOTの位置は y₀ に移る。<br>正解の情報は、データとしてしまってあるのではなく、<strong>設計図として配線に焼き付いている</strong>。だから判定のたびに読み出す必要がないんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">錠前と同じですね。錠前は「登録済みの鍵の一覧表」を持っていて差し込まれた鍵と照合する――わけではなくて、<strong>内部のピンの高さが正しい鍵の刻みに合わせて作ってある</strong>。合う鍵が入れば回るし、合わなければ回らない。正解の情報は部品の形になっている。<br>私たちの回路も、101専用の錠前です。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">いいたとえだ。以降このクエストでは、一致判定回路のことを<strong>錠前</strong>とも呼ぶことにしよう。<br>錠前のたとえで、もうひとつ確認しておきたいことがある。錠前は、開けようとする鍵が1本でも100万本でも、<strong>作るのは1個でいい</strong>。判定の相手が何通りあるかは、錠前の部品数と関係がない。部品数を決めるのは<strong>鍵の刻みの数</strong>――ビット数のほうだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">計算してみます。3ビットの場合、候補は2×2×2で8通りありましたが、回路の部品はNOT1個＋AND2個の3個でした。<br>これが128ビットなら、候補は2¹²⁸通り――天文学的な数です。でも回路のほうは、Cの0の桁にNOTを置いて、128本をANDでまとめるだけだから、<strong>部品はおおむね128個ぶん</strong>。候補の数2¹²⁸とは比べものにならないくらい小さい。<br>判定にかかる手間は、候補の数ではなく<strong>ビット数に比例する</strong>んですね。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">その通り。これがこのステージの核心だよ。<strong>「2¹²⁸個の候補がある」ことと「一致判定に2¹²⁸の手間がかかる」ことは、まったくの別問題</strong>なんだ。1個の候補について一致を判定するだけなら、128ビットぶんの小さな固定回路で足りる。ふつうのコンピュータの総当たりが2¹²⁸回かかるのは、判定が重いからではなく、<strong>候補を1個ずつ順番に入れ直す</strong>からだ。<br>次のステージでは、この錠前をそっくり量子回路に移植する。</div>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg id="lock-svg" class="qc-svg" viewBox="0 0 372 216" width="100%" role="img" aria-label="C=101の一致判定回路の図。左に3つの入力y2、y1、y0があり、y1の線にはNOTゲートが入っている。3本の線がANDゲートに集まり、出力にランプがつながる。入力を切り替えると信号線の色が変わり、入力が101のときだけランプが点灯する">
+          <text class="strong" x="186" y="16" text-anchor="middle">C=101 の錠前　f(y) ＝ y₂ AND (NOT y₁) AND y₀</text>
+          <!-- 入力トグル -->
+          <g id="in2" style="cursor:pointer" role="button" tabindex="0" aria-label="入力y2を切り替え">
+            <rect x="18" y="48" width="44" height="28" rx="7" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.5"/>
+            <text class="strong" x="40" y="67" text-anchor="middle">y₂=<tspan id="v2">0</tspan></text>
+          </g>
+          <g id="in1" style="cursor:pointer" role="button" tabindex="0" aria-label="入力y1を切り替え">
+            <rect x="18" y="94" width="44" height="28" rx="7" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.5"/>
+            <text class="strong" x="40" y="113" text-anchor="middle">y₁=<tspan id="v1">0</tspan></text>
+          </g>
+          <g id="in0" style="cursor:pointer" role="button" tabindex="0" aria-label="入力y0を切り替え">
+            <rect x="18" y="140" width="44" height="28" rx="7" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.5"/>
+            <text class="strong" x="40" y="159" text-anchor="middle">y₀=<tspan id="v0">0</tspan></text>
+          </g>
+          <!-- 配線 -->
+          <line id="w2" x1="62" y1="62" x2="222" y2="62" stroke="#b9c2cc" stroke-width="2"/>
+          <line id="w1a" x1="62" y1="108" x2="118" y2="108" stroke="#b9c2cc" stroke-width="2"/>
+          <line id="w1b" x1="162" y1="108" x2="222" y2="108" stroke="#b9c2cc" stroke-width="2"/>
+          <line id="w0" x1="62" y1="154" x2="222" y2="154" stroke="#b9c2cc" stroke-width="2"/>
+          <!-- NOT -->
+          <rect x="118" y="94" width="44" height="28" rx="7" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.5"/>
+          <text class="strong" x="140" y="113" text-anchor="middle">NOT</text>
+          <!-- AND -->
+          <rect x="222" y="48" width="56" height="120" rx="10" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.7"/>
+          <text class="strong" x="250" y="104" text-anchor="middle">AND</text>
+          <text class="label" x="250" y="120" text-anchor="middle">全部1なら1</text>
+          <!-- 出力 -->
+          <line id="wout" x1="278" y1="108" x2="318" y2="108" stroke="#b9c2cc" stroke-width="2"/>
+          <circle id="lamp" cx="336" cy="108" r="15" fill="#e7e3d8" stroke="#9aa2ad" stroke-width="1.6"/>
+          <text id="lamp-label" class="label" x="336" y="140" text-anchor="middle">不一致</text>
+          <text id="cmp-count" class="accent" x="186" y="200" text-anchor="middle">この回路が候補リストと比較した回数：0回（比較という動作が存在しない）</text>
+        </svg>
+        <div class="anim-ctrl">
+          <button type="button" class="btn" id="btn-y2">y₂ を切り替え</button>
+          <button type="button" class="btn" id="btn-y1">y₁ を切り替え</button>
+          <button type="button" class="btn" id="btn-y0">y₀ を切り替え</button>
+        </div>
+        <div class="readout">いまの入力: <b id="cur-in">000</b>　出力 f: <b id="cur-out">0</b></div>
+        <div class="diagram-caption">C=101 の一致判定回路（錠前）。入力の箱かボタンを押して y₂y₁y₀ を切り替えてみよう。8通り全部試しても、ランプが点くのは <strong>101 のときだけ</strong>。回路の中に候補リストはなく、「y₂ がそのまま1、y₁ がNOTを通って1、y₀ がそのまま1」という条件を配線が直接調べている。正解Cの情報は<strong>NOTを置いた位置</strong>に焼き付いている。</div>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【一致判定は固定回路になる】</span>
+        <span class="step">・設定：正しい値 <span class="nw">C=101</span> は既知。入力 <span class="nw">y₂y₁y₀</span> が C と一致するかを判定したい</span>
+        <span class="step">・一致条件：<span class="nw">y₂=1</span> かつ <span class="nw">y₁=0</span> かつ <span class="nw">y₀=1</span>。よって <span class="nw">f(y) ＝ y₂ AND (NOT y₁) AND y₀</span></span>
+        <span class="step">・この回路は「000と比較、001と比較……」とは<strong>動作しない</strong>。候補リストも正解のメモも持たず、入ってきたビットが条件を満たすかを直接調べる</span>
+        <span class="step">・正解の情報は<strong>NOTゲートを置く位置（＝回路の形）</strong>に焼き付いている。錠前のピンが正しい鍵の刻みに合わせて作られているのと同じ</span>
+        <span class="step">・部品数はビット数に比例する：3ビットなら部品3個、128ビットなら<span class="nw">おおむね128個ぶん</span>。候補の数（2¹²⁸）とは無関係</span>
+      </div>
+
+      <div class="quiz-head">確認クイズ</div>
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q1. 正しい値が C=110 のとき、一致判定回路 f(y) はどれ？</p>
+        <div class="choice-list">
+          <button class="choice-btn">y₂ AND y₁ AND y₀</button>
+          <button class="choice-btn">y₂ AND y₁ AND (NOT y₀)</button>
+          <button class="choice-btn">(NOT y₂) AND y₁ AND y₀</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ C=110 と一致する条件は「y₂=1 かつ y₁=1 かつ y₀=0」。0になっている桁は y₀ だけなので、NOTは y₀ に付く。NOTの位置が変わる＝別の値専用の錠前になる、ということだ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q2. この回路が正解 C=101 を「覚えている」場所はどこ？</p>
+        <div class="choice-list">
+          <button class="choice-btn">回路の形そのもの（NOTゲートを置いた位置）</button>
+          <button class="choice-btn">回路内部の比較用メモリ</button>
+          <button class="choice-btn">入力されてくる信号の中</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ 回路には正解を書いたメモも候補のリストもない。「y₁ にだけNOTを置く」という配線の選び方自体が、C=101 の写しになっている。だから判定のたびに正解を読み出す必要がなく、比較という動作も起こらない。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q3. 128ビットの値との一致判定回路を1個作るのに必要な部品の数は？</p>
+        <div class="choice-list">
+          <button class="choice-btn">候補の数と同じ 2¹²⁸ 個</button>
+          <button class="choice-btn">128 × 128 ＝ 約16000個</button>
+          <button class="choice-btn">おおむね128個ぶん（ビット数に比例）</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ Cの0の桁にNOTを置き、128本の線をANDでまとめるだけだから、部品数はビット数に比例する。「候補が2¹²⁸個ある」ことと「1回の判定にかかる手間」は別の話――ここを切り分けるのが、このクエスト全体の鍵になる。</div>
+      </div>
+
+      <div class="stage-nav">
+        <a class="btn" href="index.html">← トップへ</a>
+        <button class="btn btn-primary" id="btn-next" disabled>次へ →</button>
+      </div>
+
+      <div id="book-recommend"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/progress.js"></script>
+<script>GO.initStagePage(1);</script>
+
+<script>
+(function(){
+  // C=101 の錠前シミュレータ
+  var y = [0, 0, 0]; // [y2, y1, y0]
+  var ON = "#8a5a2a", OFF = "#b9c2cc";
+
+  function setWire(id, carrying1){
+    var el = document.getElementById(id);
+    el.setAttribute("stroke", carrying1 ? ON : OFF);
+    el.setAttribute("stroke-width", carrying1 ? "3.2" : "2");
+  }
+
+  function render(){
+    document.getElementById("v2").textContent = y[0];
+    document.getElementById("v1").textContent = y[1];
+    document.getElementById("v0").textContent = y[2];
+    var out = (y[0] === 1 && y[1] === 0 && y[2] === 1) ? 1 : 0;
+    setWire("w2", y[0] === 1);
+    setWire("w1a", y[1] === 1);
+    setWire("w1b", y[1] === 0); // NOT通過後
+    setWire("w0", y[2] === 1);
+    setWire("wout", out === 1);
+    var lamp = document.getElementById("lamp");
+    var label = document.getElementById("lamp-label");
+    if (out === 1) {
+      lamp.setAttribute("fill", "#f0d9a4");
+      lamp.setAttribute("stroke", "#8a6a24");
+      label.textContent = "一致！";
+    } else {
+      lamp.setAttribute("fill", "#e7e3d8");
+      lamp.setAttribute("stroke", "#9aa2ad");
+      label.textContent = "不一致";
+    }
+    document.getElementById("cur-in").textContent = "" + y[0] + y[1] + y[2];
+    document.getElementById("cur-out").textContent = out;
+  }
+
+  function bindToggle(idx, svgId, btnId){
+    function toggle(){ y[idx] = 1 - y[idx]; render(); }
+    var g = document.getElementById(svgId);
+    g.addEventListener("click", toggle);
+    g.addEventListener("keydown", function(e){
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+    document.getElementById(btnId).addEventListener("click", toggle);
+  }
+
+  bindToggle(0, "in2", "btn-y2");
+  bindToggle(1, "in1", "btn-y1");
+  bindToggle(2, "in0", "btn-y0");
+  render();
+})();
+</script>
+</body>
+</html>

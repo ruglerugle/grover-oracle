@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>STAGE6 それでも2⁶⁴回 ― オラクルは比較しない</title>
+<meta name="description" content="オラクルの中身が分かれば、コストも正直に数えられる。グローバーでもAES-128には約2⁶⁴回の反復が必要で、しかも直列にしか実行できない。1回1マイクロ秒でも58万年。だから世界は鍵を256ビットに伸ばした。誇張のない結論で、オラクルのクエストを締めくくる。">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/stage6.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="STAGE6 それでも2⁶⁴回 ― オラクルは比較しない">
+<meta property="og:description" content="2⁶⁴回の反復は直列で、1回1マイクロ秒でも58万年。誇張のない結論でまとめる最終ステージ。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/stage6.html">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+<style>
+  .qc-svg .label{fill:var(--muted);font-size:11px;font-weight:700}
+  .qc-svg .strong{fill:var(--ink);font-size:12px;font-weight:900}
+  .qc-svg .accent{fill:#3f6191;font-size:11px;font-weight:900}
+  .anim-ctrl{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .anim-ctrl .btn{padding:.4rem .95rem;font-size:13px;font-weight:900}
+  .anim-ctrl .btn[aria-pressed="true"]{background:#f0d9a4;border-color:#8a6a24}
+  .readout{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:center;margin-top:8px;font-size:13px;font-weight:800;color:var(--ink)}
+  .readout b{font-weight:900;font-variant-numeric:tabular-nums;color:inherit}
+</style>
+</head>
+<body>
+<div class="app-shell side-collapsed" id="app-shell">
+  <header class="game-header">
+    <div class="brand">
+      <div class="brand-title"><a class="head-reset home-badge" href="index.html" title="トップへ" aria-label="トップへ">🗝️</a> <span>オラクルは比較しない</span></div>
+      <div class="brand-sub">STAGE 6 ― それでも2⁶⁴回 ―</div>
+    </div>
+    <div class="head-progress-wrap">
+      <div class="head-progress-label" id="progress-label">クリア 0 / 6</div>
+      <div class="head-progress" role="progressbar" aria-label="クリア済みステージ数" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><div class="head-progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="header-actions">
+      <button class="head-reset" id="btn-reset-all">🔄 最初から</button>
+      <button class="head-reset" id="head-nav-toggle" title="ステージ一覧の表示切替">☰ ナビ</button>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <div class="side-backdrop" id="side-backdrop"></div>
+    <aside class="side-panel">
+      <div class="side-head">
+        <button class="side-toggle" id="sidebar-toggle" title="ステージ一覧の表示切替" aria-label="ステージ一覧の表示切替">☰</button>
+        <span class="side-head-text">📚 ステージ一覧</span>
+      </div>
+      <div class="side-list" id="side-list"></div>
+    </aside>
+
+    <main class="main-area">
+      <div class="chapter-head">
+        <span class="chapter-badge">STAGE 6</span><span class="chapter-title">それでも2⁶⁴回</span>
+        <div class="chapter-sub">誠実な結論</div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-label">🎯 ミッション</div>
+        <div class="mission-text">最後のミッションだ。約2⁶⁴回という数の重さを自分で見積もり、「なぜAESの鍵は256ビットに伸ばされたのか」を説明しよう。そのうえで、最初の疑問――オラクルは中で1個ずつ比較しているのでは？――に、自分の言葉で完全に答えられれば、クエスト達成。</div>
+        <span class="mission-status" id="mission-status">未達成</span>
+      </div>
+
+      <div class="dialogue-scene">
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">仕上げに、前回の「約2⁶⁴回」の重さを量ろう。2⁶⁴を数字で書くと約1845京――<strong>1.8×10¹⁹</strong>だ。<br>ここで大事な事実をひとつ。グローバーの反復は、<strong>直列でしか実行できない</strong>。1回目の折り返しが終わった状態に2回目のオラクルを掛け、その結果に3回目を掛ける……という数珠つなぎだから、途中を飛ばすことも、まとめて一気にやることもできない。古典の総当たりなら計算機を1万台並べて手分けできるが、この反復は<strong>行列に並ぶしかない</strong>んだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">では見積もってみます。オラクル1回はAES計算2回ぶんを含む数万ゲートでした。仮に誤り訂正まで含めて<strong>1回を1マイクロ秒</strong>（100万分の1秒）でこなせる、かなり楽観的な機械があるとします。<br>2⁶⁴回 × 1マイクロ秒 ＝ 1.8×10¹³秒。1年は約3200万秒だから……<strong>約58万年</strong>。<br>人類の文明より長いです。1000倍速い1ナノ秒の機械でも585年かかります。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">その見積もりで方向は合っている。実際の研究でも、誤り訂正のコストまで入れてAES-128へのグローバー攻撃を試算すると、必要な時間や量子ビット数は現実離れした規模になる、という結果が繰り返し出ている。つまり<strong>「量子コンピュータでAESが一瞬で破られる」は、オラクルの中身を数えた瞬間に崩れる話</strong>なんだ。<br>それでも暗号の専門家は、2次加速を軽く見なかった。「実質の安全性が128ビットから64ビット相当に目減りする」こと自体を問題にして、対策を打った。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">対策は……グローバーが「√Nに減らす」ことしかできないなら、<strong>Nを増やせばいい</strong>んですね。鍵を256ビットにすれば、候補は2²⁵⁶個。グローバーを使っても√(2²⁵⁶)＝<strong>2¹²⁸回</strong>で、今度こそ絶望的な数に戻ります。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">そう、それが<strong>AES-256</strong>だ。共通鍵暗号の量子対策は「鍵長を2倍に」でほぼ片が付く。慎重を要する場面ではAES-256を選ぶ、というのが現在の標準的な考え方だよ。<br>――なお、暗号全体で見ると、本当に危ないのは共通鍵ではなく<strong>公開鍵暗号</strong>のほうだ。前作のショアのアルゴリズムは因数分解を<strong>指数的に</strong>速くするから、こちらは鍵長を伸ばしてもしのげない。だから2024年に、ショアが効かない新方式（耐量子計算機暗号）が標準化された。グローバー対策は鍵長2倍、ショア対策は方式の交換――脅威の大きさに応じて、処方箋も違うわけだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">では、最初の疑問に自分で答え直します。「オラクルは、中で2¹²⁸個の候補を1個ずつ正解と比較しているのでは？」――していません。理由を全部言えます。<br>第一に、<strong>一致判定に比較は要らない</strong>。正解Cの情報はXゲートの配置として回路の形に焼き付いていて、候補リストも比較用メモも存在しない（STAGE1・2）。<br>第二に、重ね合わせの全成分に効くのは、<strong>回路の仕掛けではなく法則の性質</strong>。線形性が「1個ずつ通したのと同じ結果」を保証するだけで、回路は1回しか動かない（STAGE3）。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">第三に、「瞬時」でもない。多重制御Zはトフォリの鎖と逆計算で建てる数百ゲートの建築物で、オラクル1回にはAESの計算と逆計算まで含まれて<strong>数万ゲート</strong>（STAGE4・5）。<br>第四に、目印が付いただけでは<strong>読み出せない</strong>。位相は測定に現れないから、折り返しで長さに変える反復が約2⁶⁴回、しかも直列に必要（前作STAGE6と今日）。<br>――「同時に全部比較して一瞬で破る」という絵は、<strong>四重に</strong>間違っているんですね。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">完全な答えだ。これでクエスト達成だよ。<br>オラクルという言葉は「神託」――中身の見えない魔法の箱を思わせる。でも開けてみれば、中にいたのは錠前職人の地道な仕事だった。NOTの位置に正解を刻み、ANDを鎖に編み、メモを消し、目印を付けて返す。魔法がないと知ることは、量子コンピュータをつまらなくするどころか、<strong>どこが本当にすごいのか</strong>――装置ではなく法則が仕分けをしてくれること――をはっきりさせてくれる。<br>それが分かったいま、きみはもう「同時に計算するから速い」とは言わないはずだ。</div>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg id="cost-svg" class="qc-svg" viewBox="0 0 372 190" width="100%" role="img" aria-label="グローバー攻撃の所要時間の見積もり表。オラクル1回あたりの時間を選ぶと、AES-128（2の64乗回）とAES-256（2の128乗回）それぞれの攻撃所要時間が表示される">
+          <text class="strong" x="186" y="18" text-anchor="middle">グローバー攻撃の所要時間（反復は直列）</text>
+          <rect x="24" y="40" width="324" height="52" rx="9" fill="#eaf0f8" stroke="#3f6191" stroke-width="1.4"/>
+          <text class="strong" x="40" y="62">AES-128</text>
+          <text class="label" x="40" y="80">約2⁶⁴回の反復</text>
+          <text id="t128" class="strong" x="332" y="72" text-anchor="end" style="font-size:15px">約58万年</text>
+          <rect x="24" y="104" width="324" height="52" rx="9" fill="#fdefed" stroke="#b5504a" stroke-width="1.4"/>
+          <text class="strong" x="40" y="126">AES-256</text>
+          <text class="label" x="40" y="144">約2¹²⁸回の反復</text>
+          <text id="t256" class="strong" x="332" y="136" text-anchor="end" style="font-size:15px">約1.1×10²⁵年</text>
+          <text class="label" x="186" y="180" text-anchor="middle">参考：宇宙の年齢は約1.4×10¹⁰年（138億年）</text>
+        </svg>
+        <div class="anim-ctrl" role="group" aria-label="オラクル1回あたりの時間">
+          <button type="button" class="btn" data-speed="0">1回＝1ナノ秒</button>
+          <button type="button" class="btn" data-speed="1" aria-pressed="true">1回＝1マイクロ秒</button>
+          <button type="button" class="btn" data-speed="2">1回＝1ミリ秒</button>
+        </div>
+        <div class="diagram-caption">オラクル1回（AES計算＋照合＋逆計算）にかかる時間を仮定して、攻撃全体の所要時間を見積もる表。反復は直列なので、機械を増やしても行列は縮まない。1マイクロ秒＝100万分の1秒という楽観的な仮定でも、AES-128に<strong>58万年</strong>。鍵長を256ビットに伸ばせば、どの仮定でも宇宙の年齢を桁違いに超える。<strong>√Nの加速は本物、しかし魔法ではない</strong>。</div>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【クエスト全体のまとめ ― オラクルは比較しない】</span>
+        <span class="step">①<strong>一致判定は固定回路</strong>：正解Cの情報はNOT／Xの配置に焼き付く。比較リストなし、部品数はビット数に比例（STAGE1・2）</span>
+        <span class="step">②<strong>目印は位相に</strong>：Xサンド＋「全部1なら反転」で <span class="nw">|C⟩→−|C⟩</span>。長さは不変、いま測っても差は見えない（STAGE2）</span>
+        <span class="step">③<strong>仕分けは線形性の仕事</strong>：回路は1回動くだけ。「足してから通す＝1個ずつ通してから足す」を法則が保証（STAGE3）</span>
+        <span class="step">④<strong>巨大ゲートは建築物</strong>：トフォリの鎖でANDを積み、Zを1発、逆計算でメモ（手がかり）を消す（STAGE4）</span>
+        <span class="step">⑤<strong>レジスタは1本</strong>：<span class="nw">Σ|k⟩|AESₖ(P)⟩</span> は数百量子ビットの装置の1状態。「オラクル1回」＝AES計算＋照合＋位相反転＋逆計算（STAGE5）</span>
+        <span class="step">⑥<strong>それでも2⁶⁴回・直列</strong>：AES-128の攻撃は現実離れした時間。対策は鍵長2倍（AES-256）。指数加速のショアとは脅威の質が違う（STAGE6）</span>
+      </div>
+
+      <div class="quiz-head">確認クイズ</div>
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q1. グローバーのアルゴリズムでAES-128の鍵を見つけるのに必要なオラクルの回数は、おおよそ？</p>
+        <div class="choice-list">
+          <button class="choice-btn">2¹²⁸回（候補の数だけ必要）</button>
+          <button class="choice-btn">約2⁶⁴回（候補の数2¹²⁸の平方根）</button>
+          <button class="choice-btn">128回（ビット数と同じ）</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ グローバーの加速は「Nを√Nに」の2次加速。2¹²⁸の平方根は2⁶⁴で、約1845京回。総当たりの2¹²⁷回（平均）に比べれば劇的な減少だが、それでも人類の手に余る回数であることに変わりはない。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q2. グローバーの反復2⁶⁴回を、量子コンピュータを1万台並べて手分けし、1台あたり2⁶⁴÷1万回に短縮する――この作戦が成り立たない理由は？</p>
+        <div class="choice-list">
+          <button class="choice-btn">反復は前の結果に次を掛ける数珠つなぎで、直列にしか実行できないから</button>
+          <button class="choice-btn">量子コンピュータは世界に1台しか作れないから</button>
+          <button class="choice-btn">線形性が並列処理を禁止しているから</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ 2回目のオラクルは「1回目の折り返しが終わった状態」に掛けるので、途中を飛ばせない。台数を増やしてもそれぞれが同じ2⁶⁴回の行列に並ぶだけだ（厳密には台数分のわずかな分担短縮はあるが、√N回の壁は消えない）。古典総当たりが台数に比例して速くなるのとは対照的だ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q3. 量子コンピュータ時代に向けた、AESなど共通鍵暗号の標準的な対策は？</p>
+        <div class="choice-list">
+          <button class="choice-btn">共通鍵暗号を全部やめて公開鍵暗号に切り替える</button>
+          <button class="choice-btn">暗号化を2回ずつ行う</button>
+          <button class="choice-btn">鍵長を2倍（256ビット）にする――グローバーでも2¹²⁸回必要になり、実質の安全性が元に戻る</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ グローバーは「Nを√Nに」しかできないので、Nを2乗分増やせば（鍵長2倍）帳消しにできる。一方、公開鍵暗号（RSAなど）はショアのアルゴリズムに指数的に破られるため、鍵長では守れず方式ごと交換する（2024年に標準化された耐量子計算機暗号）。脅威の大きさに応じて処方箋が違う。</div>
+      </div>
+
+      <div class="stage-nav">
+        <a class="btn" href="stage5.html">← 前のステージ</a>
+        <button class="btn btn-primary" id="btn-next" disabled>クリア画面へ →</button>
+      </div>
+
+      <div id="book-recommend"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/progress.js"></script>
+<script>GO.initStagePage(6);</script>
+
+<script>
+(function(){
+  // 所要時間見積もり
+  var T128 = ["約585年", "約58万年", "約5.9億年"];
+  var T256 = ["約1.1×10²²年", "約1.1×10²⁵年", "約1.1×10²⁸年"];
+  var btns = document.querySelectorAll(".anim-ctrl .btn[data-speed]");
+  function select(i){
+    document.getElementById("t128").textContent = T128[i];
+    document.getElementById("t256").textContent = T256[i];
+    btns.forEach(function(b){
+      b.setAttribute("aria-pressed", +b.getAttribute("data-speed") === i ? "true" : "false");
+    });
+  }
+  btns.forEach(function(b){
+    b.addEventListener("click", function(){ select(+b.getAttribute("data-speed")); });
+  });
+  select(1);
+})();
+</script>
+</body>
+</html>

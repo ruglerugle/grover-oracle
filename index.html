@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>オラクルは比較しない ― グローバー探索の一致判定回路のなかみ 全6ステージの無料学習ゲーム</title>
+<meta name="description" content="「グローバーのアルゴリズムは2¹²⁸個の鍵を同時に試す」――その言い方は誤解のもと。オラクルの正体は、候補を1個ずつ比較する装置ではなく、固定の一致判定回路だ。ANDの錠前、Xゲートと多重制御Z、線形性、補助量子ビットと逆計算、AES鍵探索まで、オラクルのなかみを部品から組み立てる全6ステージの無料学習サイト。ねこ博士とうさ美が案内します。">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="オラクルは比較しない ― グローバー探索の一致判定回路のなかみ">
+<meta property="og:description" content="オラクルは候補を1個ずつ比較しない。固定の一致判定回路と線形性が「全候補ぶんの照合」を済ませるからくりを、部品から組み立てる全6ステージ。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "オラクルは比較しない ― グローバー探索の一致判定回路のなかみ",
+  "alternateName": "GROVER ORACLE QUEST",
+  "description": "グローバーのアルゴリズムのオラクル（一致判定回路）の中身を、古典のAND回路・Xゲートと多重制御Z・線形性・補助量子ビットと逆計算・AES鍵探索の全体像まで、論理の飛躍なく組み立てる学習サイト。全6ステージ。",
+  "url": "https://ruglerugle.github.io/grover-oracle/",
+  "inLanguage": "ja",
+  "learningResourceType": "learning activity",
+  "educationalLevel": "中学生以上",
+  "teaches": "量子計算（グローバーのアルゴリズム・オラクル・位相反転・線形性・多重制御ゲート・補助量子ビット・逆計算・AES鍵探索）",
+  "isAccessibleForFree": true,
+  "author": { "@type": "Person", "name": "ruglerugle" }
+}
+</script>
+</head>
+<body>
+<div class="shell">
+  <nav class="topbar" aria-label="サイト情報">
+    <span class="brand-badge" aria-hidden="true">🗝️</span>
+    <span class="brand-copy">
+      <strong>オラクルは比較しない</strong>
+      <small>GROVER ORACLE QUEST</small>
+    </span>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-copy">
+      <h1><span class="line">2¹²⁸個の候補と、</span><span class="line accent">見比べてはいない。</span></h1>
+      <p>「量子コンピュータなら、2¹²⁸個の鍵を同時に試して暗号を破れる」――この言い方を聞いて、「じゃあ中では1個ずつ比較しているんでしょ？」と思ったなら、その疑問はまっとうだ。答えは、比較していない。グローバーのアルゴリズムの心臓部「オラクル」の正体は、<span class="nowrap">正解の値に合わせて作られた</span><span class="nowrap">たった1つの固定回路</span>。それが重ね合わせ全体に効くのは、量子力学の線形性のおかげだ。錠前のたとえから出発して、Xゲートと多重制御Z、補助量子ビットと逆計算、そしてAES鍵探索の全体像まで――「オラクル1回」の中身を、部品から自分の手で組み立てよう。</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="board" aria-labelledby="quest-heading">
+      <div class="board-head">
+        <div><h2 id="quest-heading">クエストを選ぼう！</h2></div>
+        <p>ステージ1から順番にクリアしよう（前のステージをクリアすると次が解放されます）</p>
+      </div>
+
+      <div class="quest-grid">
+        <a class="quest-card" href="stage1.html" data-stage="1" style="--accent:#8a5a2a;--accent-bg:#f8f0e3">
+          <div class="q-top"><span class="q-num">1</span><span class="q-suit" aria-hidden="true">🔒</span></div>
+          <div class="q-meta"><span class="q-tag">古典回路</span><span class="q-time">⏱ 約10分</span></div>
+          <div class="q-title">一致判定は回路になる</div>
+          <p class="q-desc">「101かどうか」を調べるのに、000、001、010…と順番に見比べる必要はない。ANDとNOTでできた固定回路が、比較リストなしで一致を見抜く。錠前が鍵の一覧表を持たないのと同じ理屈だ。</p>
+          <span class="q-cta">はじめる →</span>
+        </a>
+
+        <a class="quest-card" href="stage2.html" data-stage="2" style="--accent:#2f5a9e;--accent-bg:#e9eff8">
+          <div class="q-top"><span class="q-num">2</span><span class="q-suit" aria-hidden="true">🪞</span></div>
+          <div class="q-meta"><span class="q-tag">量子回路</span><span class="q-time">⏱ 約11分</span></div>
+          <div class="q-title">位相に目印を付ける</div>
+          <p class="q-desc">同じ一致判定を量子回路で。0の位置にXゲートを置き、「全部1なら矢印を反転」する多重制御Zをはさむ。|101⟩だけが−|101⟩になる固定回路を、3ビットで組み上げる。</p>
+          <span class="q-cta">はじめる →</span>
+        </a>
+
+        <a class="quest-card" href="stage3.html" data-stage="3" style="--accent:#2f7a6b;--accent-bg:#e9f5f1">
+          <div class="q-top"><span class="q-num">3</span><span class="q-suit" aria-hidden="true">🔀</span></div>
+          <div class="q-meta"><span class="q-tag">線形性</span><span class="q-time">⏱ 約10分</span></div>
+          <div class="q-title">重ね合わせを1回で</div>
+          <p class="q-desc">重ね合わせを入れても、回路は1回しか動かない。それでも当たりの成分だけが反転するのは、量子力学の線形性が「足してから通す＝通してから足す」を保証するからだ。仕分けの正体を見る。</p>
+          <span class="q-cta">はじめる →</span>
+        </a>
+
+        <a class="quest-card" href="stage4.html" data-stage="4" style="--accent:#5b3fa6;--accent-bg:#efe9f9">
+          <div class="q-top"><span class="q-num">4</span><span class="q-suit" aria-hidden="true">⛓️</span></div>
+          <div class="q-meta"><span class="q-tag">補助ビット</span><span class="q-time">⏱ 約12分</span></div>
+          <div class="q-title">128ビットの照合</div>
+          <p class="q-desc">「128個全部1なら反転」という巨大ゲートは、1個の部品としては存在しない。補助量子ビットにANDを順番に書き込み、使い終わったら逆再生で消す。逆計算が必要な深い理由は「手がかり」だ。</p>
+          <span class="q-cta">はじめる →</span>
+        </a>
+
+        <a class="quest-card" href="stage5.html" data-stage="5" style="--accent:#b5504a;--accent-bg:#fdefed">
+          <div class="q-top"><span class="q-num">5</span><span class="q-suit" aria-hidden="true">🔐</span></div>
+          <div class="q-meta"><span class="q-tag">AES鍵探索</span><span class="q-time">⏱ 約12分</span></div>
+          <div class="q-title">AES鍵探索の全体像</div>
+          <p class="q-desc">暗号文レジスタが2¹²⁸本あるのではない。128量子ビットのレジスタ1本が、鍵ごとに違う暗号文の重ね合わせになっている。教科書の「オラクル1回」に何が含まれているのか、全部数える。</p>
+          <span class="q-cta">はじめる →</span>
+        </a>
+
+        <a class="quest-card" href="stage6.html" data-stage="6" style="--accent:#3f6191;--accent-bg:#eaf0f8">
+          <div class="q-top"><span class="q-num">6</span><span class="q-suit" aria-hidden="true">🛡️</span></div>
+          <div class="q-meta"><span class="q-tag">誠実な結論</span><span class="q-time">⏱ 約10分</span></div>
+          <div class="q-title">それでも2⁶⁴回</div>
+          <p class="q-desc">オラクルの中身が分かれば、コストも数えられる。グローバーでもAES-128には約2⁶⁴回の反復が必要で、しかも直列。だから世界は鍵を256ビットに伸ばした。誇張のない結論でまとめる。</p>
+          <span class="q-cta">はじめる →</span>
+        </a>
+      </div>
+    </section>
+
+    <div id="book-recommend"></div>
+  </main>
+
+  <footer>
+    <p>NO DOWNLOAD. NO REGISTRATION. JUST LEARN. &nbsp;© <span id="year"></span> ruglerugle</p>
+    <div class="footer-suits" aria-hidden="true"><span>🗝️</span><span>🪞</span><span>⛓️</span><span>🔐</span></div>
+  </footer>
+</div>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+<script src="js/progress.js"></script>
+<script>GO.initCoverPage();</script>
+</body>
+</html>

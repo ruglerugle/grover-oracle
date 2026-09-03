@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#26303d">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9RTQCP2HXM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9RTQCP2HXM');
+</script>
+<title>STAGE3 重ね合わせを1回で ― オラクルは比較しない</title>
+<meta name="description" content="重ね合わせを錠前に通しても、回路が動くのは1回だけ。それでも101の成分だけが反転するのは、量子力学の線形性――「足してから通す＝1個ずつ通してから足す」――が保証するからだ。成分を1個ずつ取り出す装置なしに全候補ぶんの照合が済む仕組みを確かめる。">
+<link rel="canonical" href="https://ruglerugle.github.io/grover-oracle/stage3.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="オラクルは比較しない">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="STAGE3 重ね合わせを1回で ― オラクルは比較しない">
+<meta property="og:description" content="回路は1回しか動かないのに、101の成分だけが反転する。線形性という仕分け係の正体を見る。">
+<meta property="og:url" content="https://ruglerugle.github.io/grover-oracle/stage3.html">
+<meta property="og:image" content="https://ruglerugle.github.io/grover-oracle/images/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="images/favicon.png">
+<link rel="stylesheet" href="design-system.css">
+<style>
+  .qc-svg .label{fill:var(--muted);font-size:11px;font-weight:700}
+  .qc-svg .strong{fill:var(--ink);font-size:12px;font-weight:900}
+  .qc-svg .accent{fill:#2f7a6b;font-size:11px;font-weight:900}
+  .anim-ctrl{display:flex;align-items:center;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .anim-ctrl .btn{padding:.4rem .95rem;font-size:13px;font-weight:900}
+  .readout{display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:center;margin-top:8px;font-size:13px;font-weight:800;color:var(--ink)}
+  .readout b{font-weight:900;font-variant-numeric:tabular-nums;color:inherit}
+</style>
+</head>
+<body>
+<div class="app-shell side-collapsed" id="app-shell">
+  <header class="game-header">
+    <div class="brand">
+      <div class="brand-title"><a class="head-reset home-badge" href="index.html" title="トップへ" aria-label="トップへ">🗝️</a> <span>オラクルは比較しない</span></div>
+      <div class="brand-sub">STAGE 3 ― 重ね合わせを1回で ―</div>
+    </div>
+    <div class="head-progress-wrap">
+      <div class="head-progress-label" id="progress-label">クリア 0 / 6</div>
+      <div class="head-progress" role="progressbar" aria-label="クリア済みステージ数" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><div class="head-progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="header-actions">
+      <button class="head-reset" id="btn-reset-all">🔄 最初から</button>
+      <button class="head-reset" id="head-nav-toggle" title="ステージ一覧の表示切替">☰ ナビ</button>
+    </div>
+  </header>
+
+  <div class="game-layout">
+    <div class="side-backdrop" id="side-backdrop"></div>
+    <aside class="side-panel">
+      <div class="side-head">
+        <button class="side-toggle" id="sidebar-toggle" title="ステージ一覧の表示切替" aria-label="ステージ一覧の表示切替">☰</button>
+        <span class="side-head-text">📚 ステージ一覧</span>
+      </div>
+      <div class="side-list" id="side-list"></div>
+    </aside>
+
+    <main class="main-area">
+      <div class="chapter-head">
+        <span class="chapter-badge">STAGE 3</span><span class="chapter-title">重ね合わせを1回で</span>
+        <div class="chapter-sub">線形性という仕分け係</div>
+      </div>
+
+      <div class="mission-box">
+        <div class="mission-label">🎯 ミッション</div>
+        <div class="mission-text">重ね合わせを錠前に通しても、回路が動くのは1回だけ――それなのに101の成分だけが反転する理由を、「線形性」という言葉を使って説明できれば合格。「中で成分を1個ずつ判定しているのでは？」に自分の言葉で反論できれば完璧だ。</div>
+        <span class="mission-status" id="mission-status">未達成</span>
+      </div>
+
+      <div class="dialogue-scene">
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">錠前は完成した。今日はいよいよ、重ね合わせを通す。<br>準備として、こんな状態を用意しよう。<br><strong>|ψ⟩ ＝ ½(|001⟩＋|101⟩＋|110⟩＋|000⟩)</strong><br>読み下すと、「001、101、110、000 の4つの候補に、長さ½の矢印が1本ずつ立っている一覧表」だ。確率はそれぞれ長さの2乗で¼ずつ、合計はちゃんと1になる。ψ（プサイ）は状態に付けた名前だよ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">これを C=101 の錠前に通すんですね。前のステージの結果を成分ごとに当てはめてみます。<br>・|001⟩ → 一致しないので無傷<br>・|101⟩ → 一致するので −|101⟩<br>・|110⟩ → 無傷<br>・|000⟩ → 無傷<br>だから、<br><strong>|ψ⟩ → ½(|001⟩−|101⟩＋|110⟩＋|000⟩)</strong><br>……と計算はできるんですが、この計算、<strong>やっていいことの根拠</strong>がありません。私はいま、頭の中で成分を1個ずつ取り出して錠前に通しました。実物の回路も同じことを――つまり<strong>中で4回の判定を</strong>――しているんじゃないですか？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">今日の本題はまさにそこだよ。答えから言うと、その計算は正しい。しかし実物の回路は<strong>1回しか動いていない</strong>し、成分を取り出す装置はどこにもない。<br>両方を成り立たせているのが、量子力学の<strong>線形性</strong>という性質だ。式で書くと、どんなゲートUと、どんな矢印の組でも、<br><strong>U(α|001⟩＋β|101⟩) ＝ αU|001⟩＋βU|101⟩</strong><br>――「<strong>足してから通した結果</strong>」と「<strong>1個ずつ通してから足した結果</strong>」が、<strong>必ず一致する</strong>。αやβは各成分の矢印だ。これはゲートの工夫ではなく、量子力学の法則そのものが持っている性質でね。シュレーディンガー方程式に従う変化は、例外なくこの形になる。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">つまり、私がやった「成分ごとに当てはめる」計算は、<strong>答えを求めるための便利な筆算</strong>であって、回路の中で起きている手続きの写しではない、ということですか。<br>回路が本当にやったことは……1回の書き換え。それなのに、答えは1個ずつ通した場合と必ず同じになると、法則が保証してくれている。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">その区別ができれば、今日の山は越えた。<br>もう一段具体的に、ゲートの側から見てみよう。前作でゲートは「一覧表の書き換え規則」だと学んだね。①のXゲートの規則は「y₁の桁が違う行どうしを、そっくり入れ替える」。000の行と010の行、101の行と111の行……<strong>全行に対して一斉に</strong>働く規則だ。②の多重制御Zの規則は「111の行の矢印だけ反転」。<br>どの規則も、<strong>行が4行埋まっていようが2¹²⁸行埋まっていようが、適用は1回</strong>。「埋まっている行の数だけ繰り返す」という概念が、そもそも存在しないんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">波で考えると腑に落ちます。<a href="https://quantum-mechanics.habatakijuku.com/" target="_blank" rel="noopener" style="color:#8a5a2a;text-decoration:underline">量子力学の旅</a>の二重スリットでは、1個の光子の波が2つのスリットを通って、両方の道筋が同時に変化しました。あのとき「スリットが道筋を1本ずつ処理した」とは考えませんでした。波がいくつ山を持っていても、<strong>板は1枚、通過は1回</strong>。<br>錠前も同じで、4つの山を持つ波が1枚の錠前を1回通り、101の山だけがひっくり返って出てくる。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">いいまとめだ。だから正確に言うなら、オラクルは<br>「<strong>値を一つずつ取り出して、正解と比較する</strong>」のではなく、<br>「<strong>U|101⟩＝−|101⟩、それ以外の U|y⟩＝|y⟩ という物理的な変換として、あらかじめ作り込まれている</strong>」。<br>そして線形性が、重ね合わせのどの成分にもこの変換を<strong>勝手に</strong>行き渡らせる。こちらは場合分けをひとつもしていない。仕分けは装置の仕事ではなく、<strong>法則の仕事</strong>なんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">STAGE1からの流れがつながりました。<br>・古典の錠前：比較リストなしで一致を見抜く固定回路（比較0回）<br>・量子の錠前：同じ回路をX・多重制御Z・Xで作る（やはり比較0回）<br>・重ね合わせを通す：<strong>回路1回で、全成分の照合が済む</strong>（線形性のおかげ）<br>……ただ、まだ棚上げの疑問が残っています。3ビットの多重制御Zは門番1人で済みました。でも128ビットの「<strong>全部1なら反転</strong>」なんて巨大な門番が、部品として本当にあるんですか？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">ない、というのが正直な答えだ。実物の量子コンピュータが直接実行できるのは、1ビットや2〜3ビットに働く小さな基本ゲートだけでね。128ビットの門番は、<strong>小さな部品を組み合わせて自分で建てる</strong>ことになる。その建て方――ANDの鎖と逆計算――が次のステージの主役だよ。</div>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg id="lin-svg" class="qc-svg" viewBox="0 0 372 240" width="100%" role="img" aria-label="重ね合わせを錠前に通すシミュレータ。8つの候補それぞれに矢印の列があり、選んだ候補に上向きの矢印が立つ。錠前を通すボタンを押すと、101の矢印だけが下向きに反転し、回路を通した回数が1増える">
+          <text class="strong" x="186" y="16" text-anchor="middle">重ね合わせをまるごと1回で通す</text>
+          <g id="lin-rows"></g>
+          <text class="label" x="186" y="196" text-anchor="middle">候補を押して重ね合わせに入れる／外す（金色＝矢印あり）</text>
+          <text class="strong" x="186" y="218" text-anchor="middle">錠前（回路）を通した回数：<tspan id="pass-count" class="accent">0</tspan> 回</text>
+          <text class="label" x="186" y="234" text-anchor="middle">成分を1個ずつ取り出した回数：0 回（そういう装置がない）</text>
+        </svg>
+        <div class="anim-ctrl">
+          <button type="button" class="btn btn-primary" id="btn-pass">🗝️ 錠前を1回通す</button>
+          <button type="button" class="btn" id="btn-reset-sim">やり直す</button>
+        </div>
+        <div class="readout"><b id="state-str">|ψ⟩ ＝ ½(|000⟩＋|001⟩＋|101⟩＋|110⟩)</b></div>
+        <div class="diagram-caption">上の候補ボタンで好きな重ね合わせを作り、「錠前を1回通す」を押してみよう。何成分入れても、<strong>反転するのは101の矢印だけ</strong>で、回数カウンタは1回ぶんしか進まない。2回通せば101の矢印は元に戻る（反転の反転）。回路の中に成分を取り出す装置はなく、仕分けはすべて線形性――「足してから通す＝1個ずつ通してから足す」という法則――の仕事だ。</div>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【線形性 ― 重ね合わせが勝手に仕分けられる理由】</span>
+        <span class="step">・例：<span class="nw">|ψ⟩ ＝ ½(|001⟩＋|101⟩＋|110⟩＋|000⟩)</span> を C=101 の錠前に1回通すと <span class="nw">½(|001⟩<strong>−|101⟩</strong>＋|110⟩＋|000⟩)</span></span>
+        <span class="step">・これは回路が成分を1個ずつ取り出して比較した結果ではない。錠前は <span class="nw">U|101⟩＝−|101⟩</span>、<span class="nw">U|y⟩＝|y⟩（y≠101）</span> という<strong>物理的な変換</strong>として作り込まれている</span>
+        <span class="step">・線形性：<span class="nw">U(α|001⟩＋β|101⟩) ＝ αU|001⟩＋βU|101⟩</span>。「足してから通す」と「1個ずつ通してから足す」の結果が必ず一致する――量子力学の法則そのものの性質</span>
+        <span class="step">・ゲートは一覧表<strong>全体</strong>への書き換え規則。埋まっている行が4行でも2¹²⁸行でも<strong>適用は1回</strong>。「行の数だけ繰り返す」という概念自体がない</span>
+        <span class="step">・成分ごとの筆算は<strong>答えを求める便利な計算法</strong>であって、回路内部の手続きの写しではない</span>
+      </div>
+
+      <div class="quiz-head">確認クイズ</div>
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q1. ½(|001⟩＋|101⟩＋|110⟩＋|000⟩) を C=101 の錠前に1回通すと？</p>
+        <div class="choice-list">
+          <button class="choice-btn">4つの成分すべてに−が付く</button>
+          <button class="choice-btn">1回では何も変わらず、4回通すと反転する</button>
+          <button class="choice-btn">|101⟩ の成分だけに−が付き、他の3成分は無傷</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ 錠前は U|101⟩＝−|101⟩、他はそのまま、という変換として作られている。線形性により、重ね合わせの各成分にこの変換がそのまま行き渡るので、101の成分だけが反転する。回路が動いたのは1回だけだ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q2. 成分が100万個の重ね合わせを錠前に通すとき、回路が動く回数は？</p>
+        <div class="choice-list">
+          <button class="choice-btn">1回（成分の数と回路の動作回数は無関係）</button>
+          <button class="choice-btn">100万回（成分ごとに1回ずつ）</button>
+          <button class="choice-btn">約1000回（100万の平方根）</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ ゲートは一覧表全体への書き換え規則で、埋まっている行の数だけ繰り返すという概念がそもそもない。波がいくつ山を持っていても、板は1枚・通過は1回――二重スリットで両道筋が同時に変換されたのと同じことだ。</div>
+      </div>
+
+      <div class="quiz-card" data-quiz>
+        <p class="quiz-q">Q3. 「線形性」の説明として正しいのは？</p>
+        <div class="choice-list">
+          <button class="choice-btn">回路に重ね合わせを検知する特別な装置が入っていて、成分を仕分けてくれる性質</button>
+          <button class="choice-btn">「足してから通した結果」と「1個ずつ通してから足した結果」が必ず一致するという、量子力学の法則そのものの性質</button>
+          <button class="choice-btn">測定すると候補が1つに決まるという性質</button>
+        </div>
+        <div class="quiz-explain" hidden>正解！ 仕分けは装置の仕事ではなく法則の仕事。回路は1つの候補を正しく判定するように組んであるだけで、重ね合わせ用の仕掛けは何も持っていない。それでも法則のほうが、変換を全成分に行き渡らせてくれる。</div>
+      </div>
+
+      <div class="stage-nav">
+        <a class="btn" href="stage2.html">← 前のステージ</a>
+        <button class="btn btn-primary" id="btn-next" disabled>次へ →</button>
+      </div>
+
+      <div id="book-recommend"></div>
+    </main>
+  </div>
+</div>
+
+<script src="js/progress.js"></script>
+<script>GO.initStagePage(3);</script>
+
+<script>
+(function(){
+  // 重ね合わせ×錠前シミュレータ
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var DEFAULT_SEL = [true, true, false, false, false, true, true, false]; // 000,001,101,110
+  var selected = DEFAULT_SEL.slice();
+  var signs = [1, 1, 1, 1, 1, 1, 1, 1];
+  var passCount = 0;
+  var rowsG = document.getElementById("lin-rows");
+
+  function bits(n){ return ("00" + n.toString(2)).slice(-3); }
+
+  function build(){
+    for (var i = 0; i < 8; i++) {
+      (function(n){
+        var cx = 40 + n * 42;
+        var g = document.createElementNS(SVG_NS, "g");
+        g.setAttribute("style", "cursor:pointer");
+        g.setAttribute("role", "button");
+        g.setAttribute("tabindex", "0");
+        g.setAttribute("aria-label", "候補" + bits(n) + "を切り替え");
+        var rect = document.createElementNS(SVG_NS, "rect");
+        rect.setAttribute("x", cx - 18); rect.setAttribute("y", 152);
+        rect.setAttribute("width", 36); rect.setAttribute("height", 24);
+        rect.setAttribute("rx", 6);
+        rect.setAttribute("id", "cell-" + n);
+        var label = document.createElementNS(SVG_NS, "text");
+        label.setAttribute("x", cx); label.setAttribute("y", 169);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("class", "strong");
+        label.textContent = bits(n);
+        var arrow = document.createElementNS(SVG_NS, "line");
+        arrow.setAttribute("x1", cx); arrow.setAttribute("x2", cx);
+        arrow.setAttribute("id", "arrow-" + n);
+        arrow.setAttribute("stroke-width", "3");
+        arrow.setAttribute("marker-end", "");
+        var head = document.createElementNS(SVG_NS, "path");
+        head.setAttribute("id", "head-" + n);
+        var sg = document.createElementNS(SVG_NS, "text");
+        sg.setAttribute("x", cx); sg.setAttribute("y", 42);
+        sg.setAttribute("text-anchor", "middle");
+        sg.setAttribute("class", "accent");
+        sg.setAttribute("id", "sign-" + n);
+        g.appendChild(rect); g.appendChild(label);
+        rowsG.appendChild(arrow); rowsG.appendChild(head); rowsG.appendChild(sg); rowsG.appendChild(g);
+        function toggle(){ selected[n] = !selected[n]; signs[n] = 1; render(); }
+        g.addEventListener("click", toggle);
+        g.addEventListener("keydown", function(e){
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+        });
+      })(i);
+    }
+  }
+
+  function render(){
+    var mid = 100;
+    for (var n = 0; n < 8; n++) {
+      var cx = 40 + n * 42;
+      var cell = document.getElementById("cell-" + n);
+      cell.setAttribute("fill", selected[n] ? "#f0d9a4" : "#edf0f4");
+      cell.setAttribute("stroke", selected[n] ? "#8a6a24" : "#b9c2cc");
+      cell.setAttribute("stroke-width", "1.5");
+      var arrow = document.getElementById("arrow-" + n);
+      var head = document.getElementById("head-" + n);
+      var sg = document.getElementById("sign-" + n);
+      if (!selected[n]) {
+        arrow.setAttribute("stroke", "transparent");
+        head.setAttribute("fill", "transparent");
+        sg.textContent = "";
+        continue;
+      }
+      var up = signs[n] > 0;
+      var tipY = up ? mid - 44 : mid + 44;
+      arrow.setAttribute("y1", mid);
+      arrow.setAttribute("y2", tipY);
+      arrow.setAttribute("stroke", up ? "#2f7a6b" : "#b5504a");
+      var d = up
+        ? "M" + (cx - 5) + " " + (tipY + 9) + " L" + cx + " " + tipY + " L" + (cx + 5) + " " + (tipY + 9) + " Z"
+        : "M" + (cx - 5) + " " + (tipY - 9) + " L" + cx + " " + tipY + " L" + (cx + 5) + " " + (tipY - 9) + " Z";
+      head.setAttribute("d", d);
+      head.setAttribute("fill", up ? "#2f7a6b" : "#b5504a");
+      sg.textContent = up ? "＋" : "−";
+    }
+    document.getElementById("pass-count").textContent = passCount;
+    var terms = [];
+    for (var m = 0; m < 8; m++) {
+      if (!selected[m]) continue;
+      terms.push((signs[m] > 0 ? (terms.length ? "＋" : "") : "−") + "|" + bits(m) + "⟩");
+    }
+    var k = terms.length;
+    var coef = k === 0 ? "" : k === 1 ? "" : k === 2 ? "√2分の1 × " : k === 4 ? "½" : "√" + k + "分の1 × ";
+    document.getElementById("state-str").textContent =
+      k === 0 ? "（成分がありません。候補を選んでください）" : "|ψ⟩ ＝ " + coef + "(" + terms.join("") + ")";
+  }
+
+  document.getElementById("btn-pass").addEventListener("click", function(){
+    if (selected[5]) signs[5] = -signs[5]; // |101⟩ = 5
+    passCount++;
+    render();
+  });
+  document.getElementById("btn-reset-sim").addEventListener("click", function(){
+    selected = DEFAULT_SEL.slice();
+    signs = [1,1,1,1,1,1,1,1];
+    passCount = 0;
+    render();
+  });
+
+  build();
+  render();
+})();
+</script>
+</body>
+</html>
