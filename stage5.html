@@ -70,7 +70,7 @@
 
       <div class="mission-box">
         <div class="mission-label">🎯 ミッション</div>
-        <div class="mission-text">錠前をAES鍵探索の実戦に配置しよう。Σ|k⟩|AESₖ(P)⟩ が「2¹²⁸本のレジスタ」ではなく1本のレジスタの重ね合わせであること、教科書の「オラクル1回」にAES計算・一致判定・位相反転・逆計算のすべてが含まれることを説明できれば合格。</div>
+        <div class="mission-text">錠前をAES鍵探索の実戦に配置しよう。Σ|k⟩|AESₖ(P)⟩（Σは「候補を全部足し合わせる」の記号）が「2¹²⁸本のレジスタ」ではなく1本のレジスタの重ね合わせであること、教科書の「オラクル1回」にAES計算・一致判定・位相反転・逆計算のすべてが含まれることを説明できれば合格。</div>
         <span class="mission-status" id="mission-status">未達成</span>
       </div>
 
@@ -94,14 +94,14 @@
             <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
             <div class="dialog-name mentor">ねこ博士</div>
           </div>
-          <div class="dialog-bubble">そこに気づけば、全体像は半分できたようなものだ。そう、錠前の前に<strong>もう1つ仕事</strong>が要る。kから AES<sub>k</sub>(P) を<strong>計算する</strong>仕事だ。<br>装置の構成はこうなる。レジスタ――量子ビットの束――を2本用意する。<br>・<strong>鍵レジスタ</strong>：128量子ビット。ここに鍵の重ね合わせを作る<br>・<strong>作業レジスタ</strong>：暗号文を書き込むための束。最初は |00…0⟩<br>AESはANDや入れ替えのような論理演算でできた計算だから、トフォリたち基本ゲートで<strong>量子回路として組み直せる</strong>。数万ゲート規模の大工事だが、原理はSTAGE4の鎖と同じだよ。</div>
+          <div class="dialog-bubble">そこに気づけば、全体像は半分できたようなものだ。そう、錠前の前に<strong>もう1つ仕事</strong>が要る。kから AES<sub>k</sub>(P) を<strong>計算する</strong>仕事だ。<br>装置の構成はこうなる。レジスタ――量子ビットの束――を2本用意する。<br>・<strong>鍵レジスタ</strong>：128量子ビット。ここに鍵の重ね合わせを作る<br>・<strong>作業レジスタ</strong>：暗号文を書き込むための束。最初は |00…0⟩<br>AESはANDや入れ替えのような論理演算でできた計算だから、トフォリたち基本ゲートで<strong>量子回路として組み直せる</strong>。数万ゲート規模の大工事だが、原理はSTAGE4の鎖と同じだよ。<br>それと、ここから式で使う記号をひとつ紹介しておく。<strong>Σ</strong>（シグマ）は「<strong>候補を全部足し合わせる</strong>」という印だ。たとえば Σ|k⟩ と書いたら、|00…00⟩＋|00…01⟩＋…＋|11…11⟩ という2¹²⁸個の候補ぜんぶの和を、1文字で略記している。全部書いたら宇宙が終わるからね。</div>
         </div>
         <div class="dialog-row right">
           <div class="dialog-character">
             <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
             <div class="dialog-name student">うさ美</div>
           </div>
-          <div class="dialog-bubble">手順を追ってみます。<br>①鍵レジスタの128量子ビット全部にHゲート。これで2¹²⁸個の鍵すべての等しい重ね合わせ Σ|k⟩ ができるのでした（Σは「全部の和」の記号でしたね）。<br>②AES回路を通すと、作業レジスタに各鍵での暗号文が書き込まれて……<br><strong>Σ|k⟩|AES<sub>k</sub>(P)⟩</strong><br>③ここでSTAGE4の錠前を<strong>作業レジスタ</strong>に掛ければ、暗号文がCと一致する成分だけ反転する！</div>
+          <div class="dialog-bubble">手順を追ってみます。<br>①鍵レジスタの128量子ビット全部にHゲート。全部に掛けると、すべての候補の等しい重ね合わせができるのでした。いま教わった記号で書けば Σ|k⟩ です。<br>②AES回路を通すと、作業レジスタに各鍵での暗号文が書き込まれて……<br><strong>Σ|k⟩|AES<sub>k</sub>(P)⟩</strong><br>③ここでSTAGE4の錠前を<strong>作業レジスタ</strong>に掛ければ、暗号文がCと一致する成分だけ反転する！</div>
         </div>
         <div class="dialog-row">
           <div class="dialog-character">
