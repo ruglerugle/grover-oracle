@@ -157,7 +157,77 @@
             <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
             <div class="dialog-name student">うさ美</div>
           </div>
-          <div class="dialog-bubble">教科書が「オラクル1回」と数えるものの中身が、やっと見えました。<br>①H……は準備として、1回のオラクルは、<br>②AES計算（数万ゲート）＋③一致判定と位相反転（数百ゲート）＋④AES逆計算（数万ゲート）<br>の<strong>ひとまとまり</strong>なんですね。「オラクル1回＝物理的なゲート1個」では全然ない。<br>まとめ直すと――<strong>全鍵候補と正解を比較しているのではなく、暗号文レジスタの128ビットが既知の暗号文Cと一致するかを、固定回路で調べている。そのレジスタが重ね合わせだから、条件に合う鍵の成分だけが反転する</strong>。</div>
+          <div class="dialog-bubble">教科書が「オラクル1回」と数えるものの中身が、やっと見えました。<br>①H……は準備として、1回のオラクルは、<br>②AES計算（数万ゲート）＋③一致判定と位相反転（数百ゲート）＋④AES逆計算（数万ゲート）<br>の<strong>ひとまとまり</strong>なんですね。「オラクル1回＝物理的なゲート1個」では全然ない。<br>まとめ直すと――<strong>全鍵候補と正解を比較しているのではなく、暗号文レジスタの128ビットが既知の暗号文Cと一致するかを、固定回路で調べている。そのレジスタが重ね合わせだから、条件に合う鍵の成分だけが反転する</strong>。<br>……ただ、まとめていて新しい引っかかりが生まれました。かき混ぜ機を1回通しただけで、全成分に「その鍵での暗号文」が書き込まれる。これは結局、<strong>鍵の候補を全通り試しているのと変わらない</strong>のでは？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">「帳簿の上では全通りぶんの計算結果が現れる」――そこまでは正しい。では「試した」と呼べるか、2つの物差しで検査しよう。<br>第一に<strong>費用</strong>。全通り試すとは、候補の数だけ仕事をすることだ。いま払ったのは<strong>回路1回ぶん</strong>だけ。成分が4個でも2¹²⁸個でも、ゲートの数は1個も増えない。<br>第二に<strong>収穫</strong>。本当に試し終えたのなら、答えを知っているはずだ。ところが、かき混ぜて錠前を通した直後に測定しても、当たりが出る確率は模型で4分の1、本番で2¹²⁸分の1のまま――<strong>開始前と同じで、何も知らない</strong>。全通りぶんの結果は、読めない金庫の中に生成されるんだ。<br>だから正確にはこうなる。<strong>全通りぶんの変換は起きる。しかし「試した＝結果を得た」ことにはならない</strong>。その差額を埋める労働が、√N回の折り返しだ。もし本当に全通り試せているなら1回で終わるはずで、<strong>2⁶⁴回かかること自体が、試せていないことの証拠</strong>だよ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">分かりました。では、その「1回の適用で全成分に効く」という仕組み自体――いわゆる量子並列性――の中身は、何なんですか。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">正体は<strong>波の並列性</strong>で、量子の特権ですらない。プリズムに白色光を通すと、全部の色が1回の通過で同時に曲がる。音のフィルタは全周波数を同時に処理するし、防波堤は波面の全部分を同時に回折させる。誰もプリズムを並列計算機と呼ばないが、仕組みは同じものだ。<br><strong>物理法則は、場の全点に、同文で、同時に効く</strong>。重力が海の水滴を1滴ずつ順番に引っ張らないのと同じで、法則の適用には場所ごとの料金がない。ゲートを掛けるとは、波の運動方程式を短時間走らせることだった。つまり<strong>並列に働いているのは装置ではなく、法則の適用のされ方</strong>なんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">そのたとえには反論があります。プリズムの入力は<strong>もともと色とりどり</strong>だから、同じ規則でも出力が分かれるんです。でも私たちの4成分は、作業レジスタがどれも |00⟩ で、同じに見えます。同じ入力に同じ規則を当てたら、同じ出力になるはずでは？　現に、かき混ぜ機は成分ごとに<strong>別々の暗号文</strong>を書き込みました。</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">いい反論だ。答えは、<strong>成分は同じではない</strong>。成分の住所は（鍵, 作業）のペアで、作業側こそ全部00だが、<strong>鍵側が00・01・10・11と全部違う場所</strong>にいる。しかも物理的に違う。鍵回路の|0⟩と|1⟩は励起の有無――エネルギーの違う実在の配置だから、4成分は（静・静）（静・励起）（励起・静）（励起・励起）という、赤い光と青い光くらい違う4つの様子だ。<strong>Hの仕事は、まさにこの多様性の製造</strong>――プリズムに入れる白色光を作る工程に当たる。<br>そしてかき混ぜ機の規則は「<strong>自分の住所の鍵座標を読んで、そのぶん作業座標をずらせ</strong>」という条件付きの同文規則。プリズムの「自分の波長に応じて曲がれ」と同じ型だから、出力が分かれる。<br>「読む」の実装は、2量子ビットゲート――<strong>回路どうしの物理的な結合</strong>だ。相方が励起しているかどうかで自分の共鳴条件が変わるように配線してあり、パルスはその結合を一定時間オンにするだけ。パルスは鍵の値をひとつも読んでいない。条件分岐は楽譜ではなく、結合の物理が実行する。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">まだ費用の抜け穴を2つ疑えます。ひとつめ。その楽譜――かき混ぜ機のパルス列――を<strong>作る</strong>段階で、結局、全通りぶんの計算が要るのではありませんか。鍵ごとの暗号文を知らずに、どうやって「正しくずらす」楽譜が書けるんです？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">要らない。楽譜が符号化しているのは<strong>対応表ではなくレシピ</strong>だからだ。AESの定義は「ビットをこう入れ替え、こうANDせよ」という短い手順書で、<strong>どの鍵に対しても同文で効く</strong>。それを機械的にトフォリとCNOTへ翻訳した楽譜の長さは、AESを1回計算する回路のサイズ――ビット数の多項式だ。<br>証拠を3つ。楽譜のどこにも特定の鍵の値は現れない。2¹²⁸という数も現れない。鍵を1ビット増やすと候補は倍になるのに、楽譜は数行伸びるだけ。計算機のたし算ボタンと同じだよ。歯車は桁数ぶんしか無いのに、どのたし算でもできる――機械に入っているのは表ではなく規則だ。<br>逆に言うと、判定条件が短いレシピで書けない相手――中身に規則性のない電話帳の検索――では、データ全体を回路に刻む羽目になって利得が消える。前作でやったQRAMの話だね。AES鍵探索がグローバー向きなのは、条件が「短い公開レシピ＋手元のC」だけで書けるからだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">ふたつめ。入力側です。多様性の製造がHの仕事だとおっしゃいましたが、それなら（鍵=00）（鍵=01）（鍵=10）（鍵=11）……と<strong>全候補ぶんの波を用意する段階</strong>で、全通りと同じ手間が掛かるのでは？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">掛からない。<strong>Hパルスが128発</strong>で終わる。一様な重ね合わせには、<strong>積の形に因数分解できる</strong>という特別な性質があるからだ。<br>Σ|k⟩ ＝ (|0⟩＋|1⟩)×(|0⟩＋|1⟩)×……×(|0⟩＋|1⟩)<br>各因子は「回路1個が自分だけで0と1の重ね合わせになる」＝H1発。模型ならH2発で住所4つ、3発なら8つ――<strong>1発ごとに倍</strong>。<br>代数で言えば、(a₁＋b₁)(a₂＋b₂)……(a₁₂₈＋b₁₂₈) という式は、書くのに括弧128組、<strong>展開すると2¹²⁸項</strong>。展開はこちらの記述の都合であって、自然は展開しない。コインを128枚振る動作は128回でも、できる可能性の広がりは2¹²⁸通り――<strong>指数は組み合わせに住んでいて、労働には住んでいない</strong>。<br>ただし正直に言っておくと、タダなのは一様――各回路が独立に広がるだけの、無構造な波――だからだ。成分ごとに狙った振幅を彫り込んだ任意の波を作るのは、一般に指数個のゲートが要る。グローバーの設計の賢さはここにある。<strong>安い無構造の波から出発し、欲しい構造（当たりへの集中）は、オラクルと折り返しの反復で後から彫り込む。その彫り込み代が√N回</strong>なんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbit.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">費用の監査が終わりました。数え上げます。<br>・準備：Hが128発（ビット数ぶん）<br>・楽譜の製造：AES回路1個ぶん<br>・オラクル1回の実行：同じく1個ぶん<br>・反復：<strong>約√N＝2⁶⁴回</strong>（ここだけが重い）<br>・読み出し：1行<br><strong>Nが素の姿で請求される行は、どこにもない</strong>。「全通り同時に試して一瞬」ではなく、「どの工程でも全通りぶんは払わず、金庫から答えを彫り出す代金として√Nだけ払う」――これが量子並列性の本当の収支ですね。</div>
         </div>
         <div class="dialog-row">
           <div class="dialog-character">
@@ -270,6 +340,16 @@
         <span class="step">・③ 錠前（Xサンド＋ANDの鎖＋Z＋逆鎖）→ <span class="nw">Σ(−1)<sup>[AES<sub>k</sub>(P)＝C]</sup>|k⟩|AES<sub>k</sub>(P)⟩</span>。もつれているので、暗号文への目印＝正解鍵への目印</span>
         <span class="step">・④ AES逆再生（数万ゲート）→ 作業レジスタを |00…0⟩ に戻し、手がかりを消す</span>
         <span class="step">・<strong>「オラクル1回」＝②＋③＋④のひとまとまり</strong>。物理ゲート1個ではなく数万ゲートの計算。ただしその数はAESの複雑さで決まり、候補の数2¹²⁸には比例しない</span>
+      </div>
+
+      <div class="formula-box">
+        <span class="step">【量子並列性の費用監査 ―「全通り試しているのと同じでは？」への答え】</span>
+        <span class="step">・帳簿の上では全通りぶんの計算結果が現れる。しかし<strong>費用</strong>は回路1回ぶん、<strong>収穫</strong>はゼロ（直後に測っても当たりは1/Nのまま）。「試した＝結果を得た」にはならず、差額を埋める労働が√N回の折り返し。<span class="nw">2⁶⁴回かかること自体が「試せていない」証拠</span></span>
+        <span class="step">・並列性の正体＝<strong>波の並列性</strong>。法則は場の全点に同文で同時に効き、場所ごとの料金がない（プリズム・フィルタ・防波堤と同族）。並列に働くのは装置ではなく<strong>法則の適用のされ方</strong></span>
+        <span class="step">・出力が分かれる理由：成分は（鍵, 作業）の<strong>住所が全部違う</strong>（物理的には励起の有無の違い）。Hが白色光に当たる多様性を製造し、かき混ぜ機は「自分の鍵座標のぶん、ずらせ」という<strong>条件付きの同文規則</strong>（実装は回路どうしの結合。パルスは鍵を読まない）</span>
+        <span class="step">・楽譜の製造：符号化するのは<strong>対応表ではなくレシピ</strong>。長さはAES1回ぶん（ビット数の多項式）。楽譜に鍵の値も2¹²⁸も現れない。レシピで書けない相手（電話帳）ではここが崩れる＝QRAM問題</span>
+        <span class="step">・準備：<span class="nw">Σ|k⟩＝(|0⟩＋|1⟩)×…×(|0⟩＋|1⟩)</span> と<strong>積に因数分解</strong>できるのでH×128発。展開して2¹²⁸項になるのは記述の都合。<strong>指数は組み合わせに住み、労働には住まない</strong>（任意の波を狙って彫るのは高い。安いのは無構造の一様だけ）</span>
+        <span class="step">・費用勘定の完成：<span class="nw">準備128</span>／<span class="nw">楽譜＝AES1回ぶん</span>／<span class="nw">適用＝AES1回ぶん</span>／<span class="nw">反復√N＝2⁶⁴回</span>／<span class="nw">読み出し1行</span>。<strong>Nが素の姿で請求される行はない</strong></span>
       </div>
 
       <div class="quiz-head">確認クイズ</div>
