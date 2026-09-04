@@ -95,7 +95,21 @@
             <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
             <div class="dialog-name mentor">ねこ博士</div>
           </div>
-          <div class="dialog-bubble">その見積もりで方向は合っている。実際の研究でも、誤り訂正のコストまで入れてAES-128へのグローバー攻撃を試算すると、必要な時間や量子ビット数は現実離れした規模になる、という結果が繰り返し出ている。つまり<strong>「量子コンピュータでAESが一瞬で破られる」は、オラクルの中身を数えた瞬間に崩れる話</strong>なんだ。<br>それでも暗号の専門家は、2次加速を軽く見なかった。「実質の安全性が128ビットから64ビット相当に目減りする」こと自体を問題にして、対策を打った。</div>
+          <div class="dialog-bubble">その見積もりで方向は合っている。実際の研究でも、誤り訂正のコストまで入れてAES-128へのグローバー攻撃を試算すると、必要な時間や量子ビット数は現実離れした規模になる、という結果が繰り返し出ている。つまり<strong>「量子コンピュータでAESが一瞬で破られる」は、オラクルの中身を数えた瞬間に崩れる話</strong>なんだ。</div>
+        </div>
+        <div class="dialog-row right">
+          <div class="dialog-character">
+            <div class="dialog-avatar student"><img src="images/rabbitThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name student">うさ美</div>
+          </div>
+          <div class="dialog-bubble">待ってください、いまの比較は片側だけです。古典の総当たりだって、計算機を並べて手分けできます。グローバー機と<strong>同じ予算</strong>で古典のAES回路を大量に買って並べたら――同じお金を掛けた勝負では、どちらが速いんですか？</div>
+        </div>
+        <div class="dialog-row">
+          <div class="dialog-character">
+            <div class="dialog-avatar mentor"><img src="images/catThink.webp" width="300" height="386" alt=""></div>
+            <div class="dialog-name mentor">ねこ博士</div>
+          </div>
+          <div class="dialog-bubble">公平な問いだ。そして答えは意外かもしれない。<strong>現在の見積もりでは、同じ予算・現実的な期限なら、古典の並列探索のほうが速い可能性が高い</strong>。理由は2つある。<br>ひとつ、<strong>並列化の効率</strong>。古典の総当たりは分担がきれいに効く――10台なら10倍、台数にそのまま比例する。ところがグローバーの反復は、M台で手分けしても1台あたり √(N÷M)回が必要で、<strong>得は√M倍どまり</strong>。構造的に手分けが苦手なんだ。<br>ふたつ、<strong>誤り訂正の代金</strong>。概算では、誤り訂正済みの論理ゲート1回のコストは古典ゲートの<strong>10⁹〜10¹²倍</strong>になり得る。「1年で解く」と期限を切った専門の試算では、量子側はプロセッサ約10²¹台（1台あたり数千論理量子ビットの巨大装置）が要り、同じ期限に必要な古典の専用AES回路の台数と大差ない。1台あたりの値段は量子側が桁違いに高いから、同予算の勝負では負ける。<br>実際、標準化を仕切るアメリカのNISTも、グローバーはAES攻撃で「<strong>ほとんど、またはまったく優位を持たない可能性が高い</strong>」と評している。<br>――念のため言えば、どちらの陣営も宇宙的な規模で、<strong>実際にはどちらも成功しない</strong>。それでも暗号の専門家は2次加速を軽く見なかった。将来ゲートが劇的に安く速くなれば勘定は変わりうるし、「実質の安全性が64ビット相当に目減りする」こと自体を問題にして、対策を打った。</div>
         </div>
         <div class="dialog-row right">
           <div class="dialog-character">
@@ -162,7 +176,7 @@
         <span class="step">③<strong>仕分けは線形性の仕事</strong>：回路は1回動くだけ。「足してから通す＝1個ずつ通してから足す」を法則が保証（STAGE3）</span>
         <span class="step">④<strong>巨大ゲートは建築物</strong>：トフォリの鎖でANDを積み、Zを1発、逆計算でメモ（手がかり）を消す（STAGE4）</span>
         <span class="step">⑤<strong>レジスタは1本</strong>：<span class="nw">Σ|k⟩|AESₖ(P)⟩</span> は数百量子ビットの装置の1状態。「オラクル1回」＝AES計算＋照合＋位相反転＋逆計算（STAGE5）</span>
-        <span class="step">⑥<strong>それでも2⁶⁴回・直列</strong>：AES-128の攻撃は現実離れした時間。対策は鍵長2倍（AES-256）。指数加速のショアとは脅威の質が違う（STAGE6）</span>
+        <span class="step">⑥<strong>それでも2⁶⁴回・直列</strong>：AES-128の攻撃は現実離れした時間。手分けの得は√M倍どまりで、誤り訂正の代金（論理ゲート1回＝古典の10⁹〜10¹²倍）も重く、<span class="nw">同予算なら古典並列のほうが速い可能性が高い</span>（NISTも「ほとんど、またはまったく優位なし」と評価）。対策は鍵長2倍（AES-256）。指数加速のショアとは脅威の質が違う（STAGE6）</span>
       </div>
 
       <div class="quiz-head">確認クイズ</div>
