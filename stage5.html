@@ -201,7 +201,7 @@
       </div>
 
       <div class="diagram-box">
-        <svg id="circ-anim-svg" class="qc-svg" viewBox="0 0 372 212" width="100%" role="img" aria-label="同じ1周を、実機の4個の超伝導回路の側から見るアニメーション。鍵用2個と作業用2個の回路が並び、各回路の中の電荷の雲が描かれる。最初は静か、Hパルスで鍵の雲が揺れ始め、かき混ぜ回路でもつれると1個ずつの揺れの絵が消えて霧になり、錠前のパルスでは見た目が変わらず、逆再生で作業側が静けさに戻り、折り返しで鍵の2個が励起状態になり、測定で両方から1が読み出される">
+        <svg id="circ-anim-svg" class="qc-svg" viewBox="0 0 372 212" width="100%" role="img" aria-label="同じ1周を、実機の4個の超伝導回路の側から見るアニメーション。鍵用2個と作業用2個のパネルが並び、各パネルは横軸が時間t、縦軸が回路内の電荷の位置xのオシロスコープ表示。最初は平らな線、Hパルスで鍵の2個に正弦波の揺れが現れ、かき混ぜ回路でもつれると波が消えて幅の広い帯だけになり、錠前のパルスでは何も変わらず、逆再生で作業側が元の平らに戻り、折り返しで鍵の2個が節のある励起状態の帯になり、測定で両方から1が読み出される">
           <text class="strong" x="186" y="16" text-anchor="middle">同じ1周を、実機の回路の側から見る</text>
           <text id="circ-phase" class="accent" x="186" y="34" text-anchor="middle">スタート</text>
           <rect id="ent-ring" x="16" y="50" width="344" height="94" rx="12" fill="none" stroke="#5b3fa6" stroke-width="1.6" stroke-dasharray="5 4" opacity="0"/>
@@ -214,7 +214,7 @@
           <button type="button" class="btn btn-primary" id="btn-circ-next">次へ</button>
           <button type="button" class="btn" id="btn-circ-reset">最初から</button>
         </div>
-        <div class="diagram-caption">上の波形図と<strong>同じ1周を、冷凍機の底にある4個の物理的な回路の側から</strong>眺めたアニメ。雲は、回路の中を集団で揺れる電荷（何十億個のクーパー対）の量子的な広がりを表す（揺れの実速度は毎秒約50億回、ここでは超スロー再生）。見どころは3つ。(1) 重ね合わせの間だけ、雲は<strong>目に見える揺れ</strong>を持つ。(2) <strong>もつれた瞬間、1個ずつの「揺れの絵」は物理的に消える</strong>——どの回路を単独で見ても、のっぺりした霧しか無い。状態の中身は4個の相関の中にだけあり、それを描き切れる唯一の絵が上の「候補空間の波」だ。(3) 錠前が目印を付けた瞬間ですら、<strong>どの回路の見た目も変わらない</strong>——位相は局所には現れない。だから盗み見もできない。</div>
+        <div class="diagram-caption">上の波形図と<strong>同じ1周を、冷凍機の底にある4個の物理的な回路の側から</strong>眺めたアニメ。各パネルは<strong>横軸が時間t（右から左へ流れる）、縦軸が回路内での電荷の位置x</strong>のオシロスコープ表示で、線は電荷（何十億個のクーパー対の集団）の位置の中心、薄い帯はその量子的なゆらぎの幅。揺れの実速度は毎秒約50億回で、ここでは超スロー再生だ。見どころは3つ。(1) <strong>正弦波の揺れが見えるのは、もつれる前の重ね合わせの間だけ</strong>。(2) もつれた瞬間、波は消えて幅の広い帯だけが残る——どの回路を単独で見ても「揺れの絵」は物理的に存在せず、状態の中身は4個の相関の中にだけある。それを描き切れる唯一の絵が上の「候補空間の波」だ。(3) 錠前が目印を付けた瞬間ですら、<strong>どのパネルの表示も変わらない</strong>——位相の目印は局所には現れない。だから盗み見もできない。励起状態|1⟩も波を打たない（中央に節のある、上下2本の帯）。</div>
       </div>
 
       <div class="diagram-box">
@@ -506,34 +506,44 @@
 
 <script>
 (function(){
-  // 実機の回路の側から見るアニメ（電荷の雲の揺れ）
+  // 実機の回路の側から見るアニメ（横軸t・縦軸x のオシロスコープ表示）
   var SVG_NS = "http://www.w3.org/2000/svg";
   var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var CX = [56, 144, 232, 320];
-  var CLOUD_Y = 94;
+  var MID_Y = 96, HALF_W = 32, N = 64, SAMPLE_MS = 33;
 
-  // st: 0=基底 1=重ね合わせ(揺れ) 2=もつれ(霧) 3=励起|1⟩
+  // st: 0=基底 1=重ね合わせ(正弦波) 2=もつれ(帯のみ) 3=励起|1⟩(節のある帯)
   var PHASES = [
     { name: "スタート", st: [0,0,0,0], ring: null,
-      n1: "4個とも基底状態 |0⟩。", n2: "雲は静かな零点のゆらぎだけ" },
+      n1: "4個とも基底状態 |0⟩。線は平ら。", n2: "帯は零点のゆらぎの幅" },
     { name: "① H×2（鍵の2個にパルス）", st: [1,1,0,0], ring: null,
-      n1: "鍵の2個が重ね合わせに。電荷の雲が揺れ出す", n2: "（実速度は毎秒約50億回。超スロー再生）" },
+      n1: "鍵の2個に正弦波が現れた——重ね合わせの揺れ", n2: "（実速度は毎秒約50億回。超スロー再生）" },
     { name: "② かき混ぜE", st: [2,2,2,2], ring: [0,3],
-      n1: "もつれた——1個ずつの「揺れの絵」はここで消える。", n2: "状態は4個の相関の中にしか存在しない" },
+      n1: "もつれた——波が消え、幅の広い帯だけが残る。", n2: "揺れの絵は4個の相関の中にしか存在しない" },
     { name: "③ 錠前のパルス（作業側へ）", st: [2,2,2,2], ring: [0,3],
-      n1: "目印が付いたのに、どの回路の見た目も変わらない。", n2: "位相の目印は、1個ずつの回路には現れない" },
+      n1: "目印が付いたのに、どのパネルも変わらない。", n2: "位相の目印は、1個ずつの回路には現れない" },
     { name: "④ E逆再生", st: [2,2,0,0], ring: [0,1],
-      n1: "作業の2個は |0⟩ の静けさへ戻る。", n2: "鍵の2個は互いにもつれたまま" },
+      n1: "作業の2個は元の平らな線へ戻る。", n2: "鍵の2個は互いにもつれたまま" },
     { name: "⑤ 折り返し（鍵の2個にパルス）", st: [3,3,0,0], ring: null,
-      n1: "鍵の2個がそろって励起状態 |1⟩ に。", n2: "もつれが解けて、1個ずつの絵が戻ってきた" },
+      n1: "鍵の2個が励起状態 |1⟩ に——波は打たず、節のある帯。", n2: "もつれが解けて、1個ずつの状態が戻った" },
     { name: "⑥ 測定", st: [3,3,0,0], ring: null, measure: true,
       n1: "読み出し：どちらの鍵回路も「1」。", n2: "答えは 11 ―― 正解の鍵K" }
   ];
 
+  // 各状態の帯（ゆらぎの幅）: [ [y,h], [y,h] or null ]
+  var BANDS = [
+    [[89, 14], null],          // 基底
+    [null, null],              // 重ね合わせ（線のみ）
+    [[80, 32], null],          // もつれ
+    [[79, 9], [104, 9]]        // 励起（中央に節）
+  ];
+
   var phase = 0;
   var cells = [];
+  var hist = [];
   var running = false;
   var rafId = null;
+  var lastSample = 0;
 
   function build(){
     var g = document.getElementById("circ-cells");
@@ -547,30 +557,45 @@
       box.setAttribute("fill", "#fdfcf8"); box.setAttribute("stroke", "#b9c2cc");
       box.setAttribute("stroke-width", "1.5");
       g.appendChild(box);
-      var wire = document.createElementNS(SVG_NS, "line");
-      wire.setAttribute("x1", cx - 28); wire.setAttribute("x2", cx + 28);
-      wire.setAttribute("y1", 118); wire.setAttribute("y2", 118);
-      wire.setAttribute("stroke", "#7d8894"); wire.setAttribute("stroke-width", "1.6");
-      g.appendChild(wire);
-      var jj = document.createElementNS(SVG_NS, "text");
-      jj.setAttribute("x", cx); jj.setAttribute("y", 122);
-      jj.setAttribute("text-anchor", "middle");
-      jj.setAttribute("style", "fill:#7d8894;font-size:9px;font-weight:900");
-      jj.textContent = "✕";
-      g.appendChild(jj);
-      var e1 = document.createElementNS(SVG_NS, "ellipse");
-      e1.setAttribute("fill", "#2f5a9e");
-      var e2 = document.createElementNS(SVG_NS, "ellipse");
-      e2.setAttribute("fill", "#2f5a9e");
-      g.appendChild(e1); g.appendChild(e2);
+      var bandA = document.createElementNS(SVG_NS, "rect");
+      var bandB = document.createElementNS(SVG_NS, "rect");
+      [bandA, bandB].forEach(function(b){
+        b.setAttribute("x", cx - HALF_W); b.setAttribute("width", HALF_W * 2);
+        b.setAttribute("fill", "#2f5a9e"); b.setAttribute("opacity", "0");
+        g.appendChild(b);
+      });
+      var axis = document.createElementNS(SVG_NS, "line");
+      axis.setAttribute("x1", cx - HALF_W); axis.setAttribute("x2", cx + HALF_W);
+      axis.setAttribute("y1", MID_Y); axis.setAttribute("y2", MID_Y);
+      axis.setAttribute("stroke", "#ccd3de"); axis.setAttribute("stroke-width", "1");
+      axis.setAttribute("stroke-dasharray", "2 3");
+      g.appendChild(axis);
+      var trace = document.createElementNS(SVG_NS, "path");
+      trace.setAttribute("fill", "none");
+      trace.setAttribute("stroke", "#2f5a9e");
+      trace.setAttribute("stroke-width", "2");
+      g.appendChild(trace);
       var lbl = document.createElementNS(SVG_NS, "text");
       lbl.setAttribute("x", cx); lbl.setAttribute("y", 158);
       lbl.setAttribute("text-anchor", "middle");
       lbl.setAttribute("class", "label");
       lbl.textContent = names[i];
       g.appendChild(lbl);
-      cells.push({ box: box, e1: e1, e2: e2 });
+      cells.push({ box: box, bandA: bandA, bandB: bandB, trace: trace });
+      hist.push(zeros());
     }
+    // 軸の説明（左端のパネルにだけ）
+    var ax1 = document.createElementNS(SVG_NS, "text");
+    ax1.setAttribute("x", 26); ax1.setAttribute("y", 68);
+    ax1.setAttribute("style", "fill:#8a93a0;font-size:8px;font-weight:700");
+    ax1.textContent = "x↑";
+    g.appendChild(ax1);
+    var ax2 = document.createElementNS(SVG_NS, "text");
+    ax2.setAttribute("x", 88); ax2.setAttribute("y", 133);
+    ax2.setAttribute("text-anchor", "end");
+    ax2.setAttribute("style", "fill:#8a93a0;font-size:8px;font-weight:700");
+    ax2.textContent = "t→";
+    g.appendChild(ax2);
     var sep = document.createElementNS(SVG_NS, "line");
     sep.setAttribute("x1", 188); sep.setAttribute("x2", 188);
     sep.setAttribute("y1", 56); sep.setAttribute("y2", 148);
@@ -579,39 +604,70 @@
     g.appendChild(sep);
   }
 
-  function setEllipse(e, cx, cy, rx, ry, op){
-    e.setAttribute("cx", cx); e.setAttribute("cy", cy);
-    e.setAttribute("rx", rx); e.setAttribute("ry", ry);
-    e.setAttribute("opacity", op);
+  function zeros(){
+    var a = [];
+    for (var j = 0; j < N; j++) a.push(0);
+    return a;
   }
 
-  function drawCell(i, st, t){
+  function valueOf(st, n){
+    if (st === 1) return 16 * Math.sin(0.16 * n);  // 重ね合わせ：電荷の中心が正弦波で揺れる
+    if (st === 2) return null;                      // もつれ：1個ずつの揺れの線は存在しない
+    return 0;                                       // 基底・励起：中心は動かない
+  }
+
+  function drawTrace(i){
     var cx = CX[i];
-    var c = cells[i];
-    c.e2.setAttribute("opacity", "0");
-    if (st === 0) { // 基底
-      setEllipse(c.e1, cx, CLOUD_Y, 10, 7 + 0.5 * Math.sin(2.2 * t + i), 0.45);
-    } else if (st === 1) { // 重ね合わせ：そろって揺れる
-      setEllipse(c.e1, cx + 15 * Math.sin(4.2 * t), CLOUD_Y, 11, 8, 0.6);
-    } else if (st === 2) { // もつれ：位相のない霧
-      var jx = 4 * Math.sin(7.3 * t + 1.7 * i) * Math.sin(3.1 * t + i);
-      setEllipse(c.e1, cx + jx, CLOUD_Y, 17, 9, 0.3 + 0.13 * Math.sin(5 * t + 2 * i));
-    } else { // 励起 |1⟩：節のある定常状態
-      setEllipse(c.e1, cx - 9, CLOUD_Y, 6, 11, 0.65);
-      setEllipse(c.e2, cx + 9, CLOUD_Y, 6, 11, 0.65);
+    var d = "";
+    var pen = false;
+    for (var j = 0; j < N; j++) {
+      var v = hist[i][j];
+      if (v === null) { pen = false; continue; }
+      var x = (cx - HALF_W) + j;
+      var y = MID_Y - v;
+      d += (pen ? " L" : " M") + x.toFixed(1) + " " + y.toFixed(1);
+      pen = true;
+    }
+    cells[i].trace.setAttribute("d", d);
+  }
+
+  function applyBands(){
+    var ph = PHASES[phase];
+    for (var i = 0; i < 4; i++) {
+      var conf = BANDS[ph.st[i]];
+      var bA = cells[i].bandA, bB = cells[i].bandB;
+      if (conf[0]) { bA.setAttribute("y", conf[0][0]); bA.setAttribute("height", conf[0][1]); bA.setAttribute("opacity", "0.16"); }
+      else bA.setAttribute("opacity", "0");
+      if (conf[1]) { bB.setAttribute("y", conf[1][0]); bB.setAttribute("height", conf[1][1]); bB.setAttribute("opacity", "0.16"); }
+      else bB.setAttribute("opacity", "0");
     }
   }
 
   function drawStatic(){
     var ph = PHASES[phase];
-    for (var i = 0; i < 4; i++) drawCell(i, ph.st[i], 0.7);
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j < N; j++) {
+        var st = ph.st[i];
+        hist[i][j] = (st === 1) ? 16 * Math.sin(j * 0.16) : (st === 2 ? null : 0);
+      }
+      drawTrace(i);
+    }
+    applyBands();
   }
 
+  var sampleN = 0;
   function loop(now){
     if (!running) return;
-    var t = now / 1000;
-    var ph = PHASES[phase];
-    for (var i = 0; i < 4; i++) drawCell(i, ph.st[i], t);
+    if (now - lastSample >= SAMPLE_MS) {
+      lastSample = now;
+      sampleN++;
+      var ph = PHASES[phase];
+      for (var i = 0; i < 4; i++) {
+        hist[i].shift();
+        hist[i].push(valueOf(ph.st[i], sampleN));
+        drawTrace(i);
+      }
+    }
     rafId = requestAnimationFrame(loop);
   }
 
@@ -638,6 +694,7 @@
       cells[i].box.setAttribute("stroke-width", gold ? "2.6" : "1.5");
       cells[i].box.setAttribute("fill", gold ? "#f8f0e3" : "#fdfcf8");
     }
+    applyBands();
     document.getElementById("btn-circ-next").disabled = (phase >= PHASES.length - 1);
     if (reduceMotion) drawStatic();
   }
@@ -656,7 +713,9 @@
     if (phase < PHASES.length - 1) { phase++; showPhase(); }
   });
   document.getElementById("btn-circ-reset").addEventListener("click", function(){
-    phase = 0; showPhase();
+    phase = 0;
+    for (var i = 0; i < 4; i++) hist[i] = zeros();
+    showPhase();
   });
 
   build();
