@@ -179,6 +179,28 @@
       </div>
 
       <div class="diagram-box">
+        <svg id="wave-svg" class="qc-svg" viewBox="0 0 372 244" width="100%" role="img" aria-label="模型の波形アニメーション。横軸は鍵と作業レジスタの組み合わせ16マスの候補空間で、各マスに振幅の矢印が立つ。ボタンで進めると、最初1マスに集中していた波がHゲートで4マスに広がり、かき混ぜ回路で横に移動し、錠前で1本だけ下向きに反転し、逆再生で戻り、折り返しで正解の鍵の矢印だけが長さ1に育ち、測定で11が確率100%で読み出される">
+          <text class="strong" x="186" y="16" text-anchor="middle">模型の1周を波形で見る（16マスの候補空間）</text>
+          <text id="wave-phase" class="accent" x="186" y="34" text-anchor="middle">スタート ― 鍵も作業も00</text>
+          <text id="wave-state" class="strong" x="186" y="52" text-anchor="middle">|00⟩|00⟩</text>
+          <!-- 基線とマス目 -->
+          <line x1="18" y1="160" x2="348" y2="160" stroke="#9aa2ad" stroke-width="1.4"/>
+          <line x1="96" y1="66" x2="96" y2="206" stroke="#ccd3de" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="180" y1="66" x2="180" y2="206" stroke="#ccd3de" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="264" y1="66" x2="264" y2="206" stroke="#ccd3de" stroke-width="1" stroke-dasharray="3 3"/>
+          <rect id="wave-measure" x="0" y="70" width="18" height="138" fill="#e3b563" opacity="0"/>
+          <g id="wave-ticks"></g>
+          <g id="wave-arrows"></g>
+          <g id="wave-labels"></g>
+        </svg>
+        <div class="anim-ctrl">
+          <button type="button" class="btn btn-primary" id="btn-wave-next">次へ</button>
+          <button type="button" class="btn" id="btn-wave-reset">最初から</button>
+        </div>
+        <div class="diagram-caption">レジスタが持っている「候補空間の上の波」を、模型（鍵2ビット＋作業2ビット＝16マス）で最初から最後まで追うアニメ。各マスの矢印が振幅（上向き＝＋、下向き＝−）で、確率は長さの2乗。①〜④は上の対話の通り。仕上げの⑤「平均のまわりの折り返し」は前作STAGE6の第2手で、3本の＋½と1本の−½の平均（＋¼）のまわりで全員を折り返すと、目印付きの矢印だけが長さ1に育つ――<strong>候補4個のときは、たった1回で確率100%</strong>になる。⑥測定で初めて1マスだけが光り、正解の鍵11が読み出される。どの段階でも、波に触れた装置（H・かき混ぜ機・錠前・折り返し）は正解Kを知らない固定回路だ。</div>
+      </div>
+
+      <div class="diagram-box">
         <svg id="aes-svg" class="qc-svg" viewBox="0 0 372 232" width="100%" role="img" aria-label="AES鍵探索の全体回路のステップ図。上の線が128量子ビットの鍵レジスタ、下の線が作業レジスタ。Hゲート、AES回路、一致判定の錠前、AES逆計算の4つのブロックが順に並び、ボタンで1段ずつ進めると、その時点の状態の式が下に表示される">
           <text class="strong" x="186" y="16" text-anchor="middle">AES鍵探索・オラクル1回の中身</text>
           <!-- レジスタ線 -->
@@ -314,6 +336,154 @@
     step = 0; render();
   });
   render();
+})();
+</script>
+
+<script>
+(function(){
+  // 模型の波形アニメーション（16マスの候補空間）
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var BASE_Y = 160, AMP_SCALE = 85;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function slotX(k, w){ return 26 + k * 84 + w * 20; }
+  function bits(n){ return ("0" + n.toString(2)).slice(-2); }
+
+  // 各フェーズ：w=各鍵成分の作業レジスタ値、a=符号付き振幅
+  var PHASES = [
+    { name: "スタート ― 鍵も作業も00", state: "|00⟩|00⟩", w: [0,0,0,0], a: [1,0,0,0] },
+    { name: "① H×2 ― 鍵の波が4マスに広がる", state: "½(|00⟩＋|01⟩＋|10⟩＋|11⟩)|00⟩", w: [0,0,0,0], a: [0.5,0.5,0.5,0.5] },
+    { name: "② かき混ぜE ― 波が横に動くだけ", state: "½(|00⟩|10⟩＋|01⟩|11⟩＋|10⟩|00⟩＋|11⟩|01⟩)", w: [2,3,0,1], a: [0.5,0.5,0.5,0.5] },
+    { name: "③ 錠前(C=01) ― 1本だけ下向きに", state: "½(|00⟩|10⟩＋|01⟩|11⟩＋|10⟩|00⟩−|11⟩|01⟩)", w: [2,3,0,1], a: [0.5,0.5,0.5,-0.5] },
+    { name: "④ E逆再生 ― メモが消え、目印は残る", state: "½(|00⟩＋|01⟩＋|10⟩−|11⟩)|00⟩", w: [0,0,0,0], a: [0.5,0.5,0.5,-0.5] },
+    { name: "⑤ 折り返し ― 目印が長さに変わる", state: "|11⟩|00⟩", w: [0,0,0,0], a: [0,0,0,1] },
+    { name: "⑥ 測定 ― 11が確率100%で出る", state: "読み出し結果：11（＝正解の鍵K）", w: [0,0,0,0], a: [0,0,0,1], measure: true }
+  ];
+
+  var phase = 0;
+  var cur = { x: [], a: [] };   // 現在の描画値
+  var from = null, to = null, animStart = 0, DUR = 550;
+
+  var arrowsG = document.getElementById("wave-arrows");
+  var parts = [];
+
+  function build(){
+    // 目盛りとラベル
+    var ticks = document.getElementById("wave-ticks");
+    var labels = document.getElementById("wave-labels");
+    for (var k = 0; k < 4; k++) {
+      for (var w = 0; w < 4; w++) {
+        var x = slotX(k, w);
+        var t = document.createElementNS(SVG_NS, "line");
+        t.setAttribute("x1", x); t.setAttribute("x2", x);
+        t.setAttribute("y1", 157); t.setAttribute("y2", 163);
+        t.setAttribute("stroke", "#b9c2cc"); t.setAttribute("stroke-width", "1");
+        ticks.appendChild(t);
+        var wl = document.createElementNS(SVG_NS, "text");
+        wl.setAttribute("x", x); wl.setAttribute("y", 216);
+        wl.setAttribute("text-anchor", "middle");
+        wl.setAttribute("style", "fill:#8a93a0;font-size:8px;font-weight:700");
+        wl.textContent = bits(w);
+        labels.appendChild(wl);
+      }
+      var gl = document.createElementNS(SVG_NS, "text");
+      gl.setAttribute("x", slotX(k, 0) + 30); gl.setAttribute("y", 232);
+      gl.setAttribute("text-anchor", "middle");
+      gl.setAttribute("class", "label");
+      gl.textContent = "鍵=" + bits(k);
+      labels.appendChild(gl);
+    }
+    // 矢印4本
+    for (var i = 0; i < 4; i++) {
+      var line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("stroke-width", "3.4");
+      var head = document.createElementNS(SVG_NS, "path");
+      arrowsG.appendChild(line); arrowsG.appendChild(head);
+      parts.push({ line: line, head: head });
+      cur.x.push(slotX(i, PHASES[0].w[i]));
+      cur.a.push(PHASES[0].a[i]);
+    }
+  }
+
+  function draw(){
+    for (var i = 0; i < 4; i++) {
+      var x = cur.x[i], a = cur.a[i];
+      var tip = BASE_Y - a * AMP_SCALE;
+      var up = a >= 0;
+      var color = up ? "#2f7a6b" : "#b5504a";
+      var p = parts[i];
+      if (Math.abs(a) < 0.03) {
+        p.line.setAttribute("stroke", "transparent");
+        p.head.setAttribute("fill", "transparent");
+        continue;
+      }
+      p.line.setAttribute("x1", x); p.line.setAttribute("x2", x);
+      p.line.setAttribute("y1", BASE_Y); p.line.setAttribute("y2", tip);
+      p.line.setAttribute("stroke", color);
+      var d = up
+        ? "M" + (x - 5) + " " + (tip + 9) + " L" + x + " " + tip + " L" + (x + 5) + " " + (tip + 9) + " Z"
+        : "M" + (x - 5) + " " + (tip - 9) + " L" + x + " " + tip + " L" + (x + 5) + " " + (tip - 9) + " Z";
+      p.head.setAttribute("d", d);
+      p.head.setAttribute("fill", color);
+    }
+  }
+
+  function showTexts(){
+    var ph = PHASES[phase];
+    document.getElementById("wave-phase").textContent = ph.name;
+    document.getElementById("wave-state").textContent = ph.state;
+    var m = document.getElementById("wave-measure");
+    if (ph.measure) {
+      m.setAttribute("x", slotX(3, 0) - 9);
+      m.setAttribute("opacity", "0.35");
+    } else {
+      m.setAttribute("opacity", "0");
+    }
+    document.getElementById("btn-wave-next").disabled = (phase >= PHASES.length - 1);
+  }
+
+  function ease(t){ return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+  function tick(now){
+    var t = Math.min(1, (now - animStart) / DUR);
+    var e = ease(t);
+    for (var i = 0; i < 4; i++) {
+      cur.x[i] = from.x[i] + (to.x[i] - from.x[i]) * e;
+      cur.a[i] = from.a[i] + (to.a[i] - from.a[i]) * e;
+    }
+    draw();
+    if (t < 1) requestAnimationFrame(tick);
+  }
+
+  function goTo(p){
+    phase = p;
+    var ph = PHASES[phase];
+    to = { x: [], a: [] };
+    for (var i = 0; i < 4; i++) {
+      to.x.push(slotX(i, ph.w[i]));
+      to.a.push(ph.a[i]);
+    }
+    showTexts();
+    if (reduceMotion) {
+      cur = { x: to.x.slice(), a: to.a.slice() };
+      draw();
+      return;
+    }
+    from = { x: cur.x.slice(), a: cur.a.slice() };
+    animStart = performance.now();
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById("btn-wave-next").addEventListener("click", function(){
+    if (phase < PHASES.length - 1) goTo(phase + 1);
+  });
+  document.getElementById("btn-wave-reset").addEventListener("click", function(){
+    goTo(0);
+  });
+
+  build();
+  draw();
+  showTexts();
 })();
 </script>
 </body>
