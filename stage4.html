@@ -103,6 +103,73 @@
           </div>
           <div class="dialog-bubble">それなら鎖が組めます。補助ビットを a₁、a₂、……として、<br>a₁ ＝ y₁ AND y₂<br>a₂ ＝ a₁ AND y₃<br>a₃ ＝ a₂ AND y₄<br>……<br>a₁₂₇ ＝ y₁ AND y₂ AND … AND y₁₂₈<br>トフォリを127回。最後のメモ a₁₂₇ が1になるのは、<strong>128ビット全部が1のときだけ</strong>です。</div>
         </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg class="qc-svg" viewBox="0 0 372 214" width="100%" role="img" aria-label="ANDの鎖の構造図。上の段に入力y1からy128が並び、下の段でトフォリゲートとメモが交互につながる。T1がy1とy2のANDをメモa1に書き込み、T2がa1とy3のANDをa2に、T3がa2とy4のANDをa3に書き込み、以降同様に続いて、127個目のトフォリが全ビットのANDをa127に書き込む">
+          <text class="strong" x="186" y="16" text-anchor="middle">ANDの鎖 ― トフォリ127個で組む巨大AND</text>
+          <defs>
+            <marker id="arr" viewBox="0 0 6 6" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#7d8894"/>
+            </marker>
+          </defs>
+          <!-- 入力 -->
+          <g>
+            <rect x="21" y="30" width="30" height="22" rx="5" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.4"/>
+            <text class="strong" x="36" y="46" text-anchor="middle">y₁</text>
+            <rect x="57" y="30" width="30" height="22" rx="5" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.4"/>
+            <text class="strong" x="72" y="46" text-anchor="middle">y₂</text>
+            <rect x="122" y="30" width="30" height="22" rx="5" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.4"/>
+            <text class="strong" x="137" y="46" text-anchor="middle">y₃</text>
+            <rect x="205" y="30" width="30" height="22" rx="5" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.4"/>
+            <text class="strong" x="220" y="46" text-anchor="middle">y₄</text>
+            <rect x="294" y="30" width="40" height="22" rx="5" fill="#e9eff8" stroke="#2f5a9e" stroke-width="1.4"/>
+            <text class="strong" x="314" y="46" text-anchor="middle">y₁₂₈</text>
+          </g>
+          <!-- 入力からゲートへの矢印 -->
+          <line x1="36" y1="52" x2="47" y2="101" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <line x1="72" y1="52" x2="61" y2="101" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <line x1="137" y1="52" x2="137" y2="101" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <line x1="220" y1="52" x2="220" y2="101" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <line x1="314" y1="52" x2="314" y2="101" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <!-- ゲートとメモの鎖 -->
+          <rect x="38" y="104" width="32" height="28" rx="6" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.5"/>
+          <text class="strong" x="54" y="123" text-anchor="middle">T₁</text>
+          <line x1="70" y1="118" x2="79" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <circle cx="95" cy="118" r="13" fill="#efe9f9" stroke="#5b3fa6" stroke-width="1.6"/>
+          <text class="strong" x="95" y="123" text-anchor="middle">a₁</text>
+          <line x1="108" y1="118" x2="118" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <rect x="121" y="104" width="32" height="28" rx="6" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.5"/>
+          <text class="strong" x="137" y="123" text-anchor="middle">T₂</text>
+          <line x1="153" y1="118" x2="162" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <circle cx="178" cy="118" r="13" fill="#efe9f9" stroke="#5b3fa6" stroke-width="1.6"/>
+          <text class="strong" x="178" y="123" text-anchor="middle">a₂</text>
+          <line x1="191" y1="118" x2="201" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <rect x="204" y="104" width="32" height="28" rx="6" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.5"/>
+          <text class="strong" x="220" y="123" text-anchor="middle">T₃</text>
+          <line x1="236" y1="118" x2="245" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <circle cx="261" cy="118" r="13" fill="#efe9f9" stroke="#5b3fa6" stroke-width="1.6"/>
+          <text class="strong" x="261" y="123" text-anchor="middle">a₃</text>
+          <line x1="274" y1="118" x2="289" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <text class="strong" x="282" y="112" text-anchor="middle">⋯</text>
+          <rect x="292" y="104" width="44" height="28" rx="6" fill="#f8f0e3" stroke="#8a5a2a" stroke-width="1.5"/>
+          <text class="strong" x="314" y="123" text-anchor="middle">T₁₂₇</text>
+          <line x1="336" y1="118" x2="341" y2="118" stroke="#7d8894" stroke-width="1.6" marker-end="url(#arr)"/>
+          <circle cx="355" cy="118" r="13" fill="#efe9f9" stroke="#5b3fa6" stroke-width="2.2"/>
+          <text class="strong" x="355" y="123" text-anchor="middle">a₁₂₇</text>
+          <!-- メモの中身 -->
+          <text class="label" x="95" y="149" text-anchor="middle">＝y₁∧y₂</text>
+          <text class="label" x="178" y="149" text-anchor="middle">＝a₁∧y₃</text>
+          <text class="label" x="261" y="149" text-anchor="middle">＝a₂∧y₄</text>
+          <text class="label" x="368" y="162" text-anchor="end">＝全128ビットのAND</text>
+          <!-- 凡例と結論 -->
+          <text class="label" x="186" y="176" text-anchor="middle">T＝トフォリゲート（2つの入力のANDを、0に用意したメモに書き込む）</text>
+          <text class="accent" x="186" y="196" text-anchor="middle">a₁₂₇＝1 ⇔ y₁〜y₁₂₈ が全部1。使うトフォリは127個＝ビット数に比例</text>
+        </svg>
+        <div class="diagram-caption">ANDの鎖の設計図。バケツリレーのように、「ここまでの結果」を持ったメモと新しい入力1本のANDを、次のメモに書き込んでいく。1段目のT₁だけは入力2本（y₁とy₂）を受け、2段目からは<strong>直前のメモ＋新しい入力</strong>の繰り返し。段数は入力の本数で決まるから、128ビットでもトフォリ127個――候補の数2¹²⁸はどこにも登場しない。最後のメモ a₁₂₇ が「全部1か？」の答えを1ビットで持つ。</div>
+      </div>
+
+      <div class="dialogue-scene">
         <div class="dialog-row">
           <div class="dialog-character">
             <div class="dialog-avatar mentor"><img src="images/cat.webp" width="300" height="386" alt=""></div>
